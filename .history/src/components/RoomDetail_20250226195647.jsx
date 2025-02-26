@@ -19,47 +19,16 @@ function RoomDetail() {
     }
 
     async function fetchRoomMembers() {
-        // 1. Get room_members data
-        const { data: roomMembersData, error: roomMembersError } = await supabase
-          .from("room_members")
-          .select("user_id")
-          .eq("room_id", roomId);
-      
-        if (roomMembersError) {
-          setErrorMessage("Failed to load room members.");
-          return;
-        }
-      
-        if (roomMembersData.length > 0) {
-          const userIds = roomMembersData.map((member) => member.user_id);
-      
-          // 2. Get user data based on user_ids
-          const { data: usersData, error: usersError } = await supabase
-            .from("users")
-            .select("username, id")
-            .in("id", userIds);
-      
-          if (usersError) {
-            setErrorMessage("Failed to load user details.");
-            return;
-          }
-      
-          // 3. Combine the two datas.
-          const combinedData = roomMembersData.map((member) => {
-            const user = usersData.find((u) => u.id === member.user_id);
-            return {
-              user_id: member.user_id,
-              users: {
-                username: user?.username,
-              },
-            };
-          });
-      
-          setMembers(combinedData);
-        } else {
-          setMembers([]);
-        }
-      }
+      const { data, error } = await supabase
+        .from("room_members")
+        .select("user_id, users(username)")
+        .eq("room_id", roomId)
+        .innerJoin("users", "room_members.user_id", "users.id");
+
+      if (error) setErrorMessage("Failed to load room members.");
+      else setMembers(data);
+    }
+
     async function fetchUser() {
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData?.user) {
