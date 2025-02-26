@@ -19,60 +19,36 @@ function RoomDetail() {
     }
 
     async function fetchRoomMembers() {
-      // 1. Get room_members data
-      const { data: roomMembersData, error: roomMembersError } = await supabase
+      const { data, error } = await supabase
         .from("room_members")
-        .select("user_id")
-        .eq("room_id", roomId);
+        .select("user_id, users(username)")
+        .eq("room_id", roomId)
+        .innerJoin("users", "room_members.user_id", "users.id");
 
-      if (roomMembersError) {
-        setErrorMessage("Failed to load room members.");
-        return;
+      if (error) setErrorMessage("Failed to load room members.");
+      else {
+        // Add the creator to the members list if they are not already there.
+        if (room && room.created_by) {
+          const creatorExists = data.some((member) => member.user_id === room.created_by);
+          if (!creatorExists) {
+            const { data: creatorData, error: creatorError } = await supabase
+              .from("users")
+              .select("username")
+              .eq("id", room.created_by)
+              .single();
+
+            if (creatorData) {
+              setMembers([...data, { user_id: room.created_by, users: { username: creatorData.username } }]);
+            } else {
+              setMembers(data);
+            }
+          } else {
+            setMembers(data);
+          }
+        } else {
+          setMembers(data);
+        }
       }
-
-      // Collect all user IDs (including the creator)
-      let userIds = roomMembersData.map((member) => member.user_id);
-
-      // 2. Fetch the room creator separately
-      const { data: roomData, error: roomError } = await supabase
-        .from("rooms")
-        .select("created_by")
-        .eq("id", roomId)
-        .single();
-
-      if (roomError) {
-        setErrorMessage("Failed to load room details.");
-        return;
-      }
-
-      // Ensure creator is in the members list
-      if (!userIds.includes(roomData.created_by)) {
-        userIds.push(roomData.created_by);
-      }
-
-      // 3. Get user data based on user_ids
-      const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("username, id")
-        .in("id", userIds);
-
-      if (usersError) {
-        setErrorMessage("Failed to load user details.");
-        return;
-      }
-
-      // 4. Combine data and mark the creator
-      const combinedData = userIds.map((userId) => {
-        const user = usersData.find((u) => u.id === userId);
-        return {
-          user_id: user?.id,
-          username: user?.username,
-          isCreator: userId === roomData.created_by, // Mark if the user is the creator
-        };
-      });
-
-      // Sort to put the creator at the top
-      setMembers(combinedData.sort((a, b) => b.isCreator - a.isCreator));
     }
 
     async function fetchUser() {
@@ -87,7 +63,7 @@ function RoomDetail() {
     fetchRoomDetails();
     fetchRoomMembers();
     fetchUser();
-  }, [roomId]);
+  }, [roomId, room?.created_by]);
 
   useEffect(() => {
     if (user && room) {
@@ -126,7 +102,7 @@ function RoomDetail() {
       setErrorMessage("Failed to add member. Try again.");
     } else {
       // Refresh members list without reloading the page
-      setMembers([...members, { user_id: userToAdd.id, username: newMember, isCreator: false }]);
+      setMembers([...members, { user_id: userToAdd.id, users: { username: newMember } }]);
       setNewMember("");
     }
   };
@@ -144,7 +120,9 @@ function RoomDetail() {
           <ul>
             {members.map((member) => (
               <li key={member.user_id}>
-                {member.isCreator ? `${member.username} (Creator)` : member.username}
+                {member.user_id === room.created_by
+                  ? `${member.users.username} (Creator)`
+                  : member.users.username}
               </li>
             ))}
           </ul>

@@ -30,49 +30,35 @@ function RoomDetail() {
         return;
       }
 
-      // Collect all user IDs (including the creator)
-      let userIds = roomMembersData.map((member) => member.user_id);
+      if (roomMembersData.length > 0) {
+        const userIds = roomMembersData.map((member) => member.user_id);
 
-      // 2. Fetch the room creator separately
-      const { data: roomData, error: roomError } = await supabase
-        .from("rooms")
-        .select("created_by")
-        .eq("id", roomId)
-        .single();
+        // 2. Get user data based on user_ids
+        const { data: usersData, error: usersError } = await supabase
+          .from("users")
+          .select("username, id")
+          .in("id", userIds);
 
-      if (roomError) {
-        setErrorMessage("Failed to load room details.");
-        return;
+        if (usersError) {
+          setErrorMessage("Failed to load user details.");
+          return;
+        }
+
+        // 3. Combine the two datas.
+        const combinedData = roomMembersData.map((member) => {
+          const user = usersData.find((u) => u.id === member.user_id);
+          return {
+            user_id: member.user_id,
+            users: {
+              username: user?.username,
+            },
+          };
+        });
+
+        setMembers(combinedData);
+      } else {
+        setMembers([]);
       }
-
-      // Ensure creator is in the members list
-      if (!userIds.includes(roomData.created_by)) {
-        userIds.push(roomData.created_by);
-      }
-
-      // 3. Get user data based on user_ids
-      const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("username, id")
-        .in("id", userIds);
-
-      if (usersError) {
-        setErrorMessage("Failed to load user details.");
-        return;
-      }
-
-      // 4. Combine data and mark the creator
-      const combinedData = userIds.map((userId) => {
-        const user = usersData.find((u) => u.id === userId);
-        return {
-          user_id: user?.id,
-          username: user?.username,
-          isCreator: userId === roomData.created_by, // Mark if the user is the creator
-        };
-      });
-
-      // Sort to put the creator at the top
-      setMembers(combinedData.sort((a, b) => b.isCreator - a.isCreator));
     }
 
     async function fetchUser() {
@@ -126,7 +112,7 @@ function RoomDetail() {
       setErrorMessage("Failed to add member. Try again.");
     } else {
       // Refresh members list without reloading the page
-      setMembers([...members, { user_id: userToAdd.id, username: newMember, isCreator: false }]);
+      setMembers([...members, { user_id: userToAdd.id, users: { username: newMember } }]);
       setNewMember("");
     }
   };
@@ -144,7 +130,9 @@ function RoomDetail() {
           <ul>
             {members.map((member) => (
               <li key={member.user_id}>
-                {member.isCreator ? `${member.username} (Creator)` : member.username}
+                {member.user_id === room.created_by
+                  ? `${member.users.username} (Creator)`
+                  : member.users.username}
               </li>
             ))}
           </ul>
