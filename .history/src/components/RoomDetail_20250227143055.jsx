@@ -1,9 +1,8 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../supabase";
 import Tasks from "./Tasks";
 import TaskDetail from "./TaskDetail";
-import ChatRoom from "./ChatRoom"; // Import the ChatRoom component
 
 function RoomDetail() {
   const { roomId } = useParams();
@@ -16,7 +15,6 @@ function RoomDetail() {
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [showChatModal, setShowChatModal] = useState(false); // Add state for chat modal
 
   useEffect(() => {
     async function fetchRoomDetails() {
@@ -88,24 +86,9 @@ function RoomDetail() {
       setUser(authData.user);
     }
 
-    async function fetchTasks() {
-      const { data: tasksData, error: tasksError } = await supabase
-        .from("tasks")
-        .select("*")
-        .eq("room_id", roomId);
-
-      if (tasksError) {
-        setErrorMessage("Failed to load tasks.");
-        return;
-      }
-
-      setTasks(tasksData);
-    }
-
     fetchRoomDetails();
     fetchRoomMembers();
     fetchUser();
-    fetchTasks();
 
     // Real-time subscription for room_members
     const memberSubscription = supabase
@@ -120,21 +103,8 @@ function RoomDetail() {
       )
       .subscribe();
 
-    const taskSubscription = supabase
-      .channel("realtime:tasks")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "tasks" },
-        (payload) => {
-          console.log("Task change:", payload);
-          fetchTasks(); // Refresh the tasks list
-        }
-      )
-      .subscribe();
-
     return () => {
       supabase.removeChannel(memberSubscription);
-      supabase.removeChannel(taskSubscription);
     };
   }, [roomId]);
 
@@ -192,97 +162,62 @@ function RoomDetail() {
     } else {
       console.log("Member added successfully.");
       setNewMember("");
+      // No need to manually call fetchRoomMembers() since the real-time listener will handle updates
     }
   }
 
   return (
-<div className="bg-white text-gray-800 p-6 rounded-lg shadow-md">
-  {errorMessage && (
-    <div className="text-red-600 mb-4 bg-red-100 p-3 rounded">
-      {errorMessage}
+    <div>
+      {errorMessage && (
+        <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
+      )}
+
+      {room ? (
+        <>
+          <h2>{room.name}</h2>
+          <h3>Members</h3>
+          <ul>
+            {members.map((member) => (
+              <li key={member.user_id}>
+                {user && member.user_id === user.id
+                  ? `You${member.isCreator ? " (Creator)" : ""}`
+                  : `${member.username}${member.isCreator ? " (Creator)" : ""}`}
+              </li>
+            ))}
+          </ul>
+
+          {isCreator && (
+            <form onSubmit={handleAddMember}>
+              <input
+                type="text"
+                value={newMember}
+                onChange={(e) => setNewMember(e.target.value)}
+                placeholder="Enter username"
+                required
+              />
+              <button type="submit">Add Member</button>
+            </form>
+          )}
+
+          <button onClick={() => setShowTaskModal(true)}>Add Task</button>
+
+          {showTaskModal && <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />}
+
+          <h3>Tasks</h3>
+          <ul>
+            {tasks.map((task) => (
+              <li key={task.id} style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setSelectedTask(task)}>
+                {task.content} - <strong>{task.priority}</strong>
+              </li>
+            ))}
+          </ul>
+
+          {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
+        </>
+      ) : (
+        <p>Loading room details...</p>
+      )}
     </div>
-  )}
-
-  {room ? (
-    <>
-      <h2 className="text-2xl font-semibold mb-4 text-black">
-        {room.name}
-      </h2>
-      <h3 className="text-lg font-medium mb-2 text-gray-700">Members</h3>
-      <ul className="list-disc list-inside mb-4">
-        {members.map((member) => (
-          <li key={member.user_id} className="text-gray-800">
-            {user && member.user_id === user.id
-              ? `You${member.isCreator ? " (Creator)" : ""}`
-              : `${member.username}${
-                  member.isCreator ? " (Creator)" : ""
-                }`}
-          </li>
-        ))}
-      </ul>
-
-      {isCreator && (
-        <form onSubmit={handleAddMember} className="mb-4">
-          <input
-            type="text"
-            value={newMember}
-            onChange={(e) => setNewMember(e.target.value)}
-            placeholder="Enter username"
-            required
-            className="border rounded p-2 mr-2 text-black"
-          />
-          <button
-            type="submit"
-            className="bg-black text-white rounded p-2 hover:bg-gray-800"
-          >
-            Add Member
-          </button>
-        </form>
-      )}
-
-      <div className="flex space-x-2 mb-4">
-        <button
-          onClick={() => setShowTaskModal(true)}
-          className="bg-gray-200 text-gray-800 rounded p-2 hover:bg-gray-300"
-        >
-          Add Task
-        </button>
-        <button
-          onClick={() => setShowChatModal(true)}
-          className="bg-gray-200 text-gray-800 rounded p-2 hover:bg-gray-300"
-        >
-          Chat
-        </button>
-      </div>
-
-      {showTaskModal && (
-        <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />
-      )}
-      {showChatModal && (
-        <ChatRoom roomId={roomId} user={user} onClose={() => setShowChatModal(false)} />
-      )}
-
-      <h3 className="text-lg font-medium mb-2 text-gray-700">Tasks</h3>
-      <ul className="list-disc list-inside mb-4">
-        {tasks.map((task) => (
-          <li
-            key={task.id}
-            className="cursor-pointer text-gray-800 underline"
-            onClick={() => setSelectedTask(task)}
-          >
-            {task.content} - <strong className="font-semibold">{task.priority}</strong>
-          </li>
-        ))}
-      </ul>
-
-      {selectedTask && (
-        <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />
-      )}
-    </>
-  ) : (
-    <p className="text-gray-600 italic">Loading room details...</p>
-  )}
-</div>
   );
 }
 

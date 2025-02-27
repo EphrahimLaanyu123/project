@@ -104,16 +104,16 @@ function Rooms() {
   };
 
   return (
-    <div className="h-screen w-screen bg-white text-black flex flex-col items-center p-6">
+    <div className="h-screen w-screen bg-black text-white flex flex-col items-center p-6">
       {user && (
         <div className="flex items-center mb-6 space-x-3">
-          <FaUserCircle size={40} className="text-gray-700" />
+          <FaUserCircle size={40} className="text-gray-400" />
           <p className="text-xl font-semibold">{user.username || "User"}</p>
         </div>
       )}
 
       {errorMessage && (
-        <p className="bg-red-500 text-white p-3 rounded-md mb-4 text-center w-full max-w-lg">
+        <p className="bg-red-600 text-white p-3 rounded-md mb-4 text-center w-full max-w-lg">
           {errorMessage}
         </p>
       )}
@@ -121,7 +121,7 @@ function Rooms() {
       <h2 className="text-2xl font-bold mb-4">Rooms</h2>
       <button
         onClick={signOut}
-        className="bg-black hover:bg-gray-800 text-white px-4 py-2 rounded-md mb-4"
+        className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-md mb-4"
       >
         Sign Out
       </button>
@@ -132,12 +132,12 @@ function Rooms() {
           value={roomName}
           onChange={(e) => setRoomName(e.target.value)}
           placeholder="Enter room name"
-          className="w-full p-3 rounded-md bg-gray-100 text-black focus:outline-none focus:ring-2 focus:ring-gray-500"
+          className="w-full p-3 rounded-md bg-gray-800 text-white focus:outline-none focus:ring-2 focus:ring-gray-500"
           required
         />
         <button
           type="submit"
-          className="mt-3 bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800"
+          className="mt-3 bg-white text-black px-4 py-2 rounded-md hover:bg-gray-300"
         >
           Add Room
         </button>
@@ -150,7 +150,7 @@ function Rooms() {
             {myRooms.map((room) => (
               <li
                 key={room.id}
-                className="cursor-pointer underline mb-2 hover:text-gray-600"
+                className="cursor-pointer underline mb-2 hover:text-gray-300"
                 onClick={() => navigate(`/rooms/${room.id}`)}
               >
                 {room.name} (Created by You)
@@ -158,7 +158,7 @@ function Rooms() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">No rooms created yet.</p>
+          <p className="text-gray-400">No rooms created yet.</p>
         )}
       </div>
 
@@ -169,7 +169,7 @@ function Rooms() {
             {addedRooms.map((room) => (
               <li
                 key={room.id}
-                className="cursor-pointer underline mb-2 hover:text-gray-600"
+                className="cursor-pointer underline mb-2 hover:text-gray-300"
                 onClick={() => navigate(`/rooms/${room.id}`)}
               >
                 {room.name} (You are a member)
@@ -177,7 +177,7 @@ function Rooms() {
             ))}
           </ul>
         ) : (
-          <p className="text-gray-500">Not added to any rooms yet.</p>
+          <p className="text-gray-400">Not added to any rooms yet.</p>
         )}
       </div>
     </div>
@@ -185,3 +185,4 @@ function Rooms() {
 }
 
 export default Rooms;
+  

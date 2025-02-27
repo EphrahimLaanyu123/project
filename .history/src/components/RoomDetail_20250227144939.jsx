@@ -196,93 +196,40 @@ function RoomDetail() {
   }
 
   return (
-<div className="bg-white text-gray-800 p-6 rounded-lg shadow-md">
-  {errorMessage && (
-    <div className="text-red-600 mb-4 bg-red-100 p-3 rounded">
-      {errorMessage}
+    <div className="bg-white text-black min-h-screen p-6">
+      {errorMessage && <div className="text-red-500 mb-4">{errorMessage}</div>}
+      {room ? (
+        <div className="max-w-2xl mx-auto bg-gray-100 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold mb-4">{room.name}</h2>
+          <h3 className="text-lg font-semibold mb-2">Members</h3>
+          <ul className="mb-4">
+            {members.map((member) => (
+              <li key={member.user_id} className="py-1">
+                {user && member.user_id === user.id ? `You${member.isCreator ? " (Creator)" : ""}` : `${member.username}${member.isCreator ? " (Creator)" : ""}`}
+              </li>
+            ))}
+          </ul>
+          
+          <button className="bg-black text-white px-4 py-2 rounded-lg mr-2" onClick={() => setShowTaskModal(true)}>Add Task</button>
+          <button className="bg-black text-white px-4 py-2 rounded-lg" onClick={() => setShowChatModal(true)}>Chat</button>
+
+          {showTaskModal && <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />}
+          {showChatModal && <ChatRoom roomId={roomId} user={user} onClose={() => setShowChatModal(false)} />}
+
+          <h3 className="text-lg font-semibold mt-6 mb-2">Tasks</h3>
+          <ul>
+            {tasks.map((task) => (
+              <li key={task.id} className="cursor-pointer underline" onClick={() => setSelectedTask(task)}>
+                {task.content} - <strong>{task.priority}</strong>
+              </li>
+            ))}
+          </ul>
+          {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
+        </div>
+      ) : (
+        <p>Loading room details...</p>
+      )}
     </div>
-  )}
-
-  {room ? (
-    <>
-      <h2 className="text-2xl font-semibold mb-4 text-black">
-        {room.name}
-      </h2>
-      <h3 className="text-lg font-medium mb-2 text-gray-700">Members</h3>
-      <ul className="list-disc list-inside mb-4">
-        {members.map((member) => (
-          <li key={member.user_id} className="text-gray-800">
-            {user && member.user_id === user.id
-              ? `You${member.isCreator ? " (Creator)" : ""}`
-              : `${member.username}${
-                  member.isCreator ? " (Creator)" : ""
-                }`}
-          </li>
-        ))}
-      </ul>
-
-      {isCreator && (
-        <form onSubmit={handleAddMember} className="mb-4">
-          <input
-            type="text"
-            value={newMember}
-            onChange={(e) => setNewMember(e.target.value)}
-            placeholder="Enter username"
-            required
-            className="border rounded p-2 mr-2 text-black"
-          />
-          <button
-            type="submit"
-            className="bg-black text-white rounded p-2 hover:bg-gray-800"
-          >
-            Add Member
-          </button>
-        </form>
-      )}
-
-      <div className="flex space-x-2 mb-4">
-        <button
-          onClick={() => setShowTaskModal(true)}
-          className="bg-gray-200 text-gray-800 rounded p-2 hover:bg-gray-300"
-        >
-          Add Task
-        </button>
-        <button
-          onClick={() => setShowChatModal(true)}
-          className="bg-gray-200 text-gray-800 rounded p-2 hover:bg-gray-300"
-        >
-          Chat
-        </button>
-      </div>
-
-      {showTaskModal && (
-        <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />
-      )}
-      {showChatModal && (
-        <ChatRoom roomId={roomId} user={user} onClose={() => setShowChatModal(false)} />
-      )}
-
-      <h3 className="text-lg font-medium mb-2 text-gray-700">Tasks</h3>
-      <ul className="list-disc list-inside mb-4">
-        {tasks.map((task) => (
-          <li
-            key={task.id}
-            className="cursor-pointer text-gray-800 underline"
-            onClick={() => setSelectedTask(task)}
-          >
-            {task.content} - <strong className="font-semibold">{task.priority}</strong>
-          </li>
-        ))}
-      </ul>
-
-      {selectedTask && (
-        <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />
-      )}
-    </>
-  ) : (
-    <p className="text-gray-600 italic">Loading room details...</p>
-  )}
-</div>
   );
 }
 
