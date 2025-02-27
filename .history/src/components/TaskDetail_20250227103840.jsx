@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { supabase } from "../supabase"; // Ensure Supabase is properly configured
+import { supabase } from "../supabase"; // Ensure you have Supabase configured
 
 function TaskDetail({ task, onClose }) {
   if (!task) return null;
@@ -15,62 +15,23 @@ function TaskDetail({ task, onClose }) {
     fetchSubtasks();
     fetchComments();
     fetchActivity();
-
-    // Subscribe to real-time updates
-    const channel = supabase.channel(`task:${task.id}`);
-
-    // Listen for task status updates
-    channel.on(
-      "postgres_changes",
-      { event: "UPDATE", schema: "public", table: "tasks", filter: `id=eq.${task.id}` },
-      (payload) => {
-        setStatus(payload.new.status); // Update status in real-time
-      }
-    );
-
-    // Listen for new subtasks
-    channel.on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "subtasks", filter: `task_id=eq.${task.id}` },
-      (payload) => {
-        setSubtasks((prev) => [...prev, payload.new]);
-      }
-    );
-
-    // Listen for new comments
-    channel.on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "comments", filter: `task_id=eq.${task.id}` },
-      (payload) => {
-        setComments((prev) => [...prev, payload.new]);
-      }
-    );
-
-    // Listen for new activity logs
-    channel.on(
-      "postgres_changes",
-      { event: "INSERT", schema: "public", table: "task_activity", filter: `task_id=eq.${task.id}` },
-      (payload) => {
-        setActivity((prev) => [payload.new, ...prev]);
-      }
-    );
-
-    channel.subscribe();
-
-    return () => {
-      supabase.removeChannel(channel); // Cleanup subscription on unmount
-    };
   }, [task.id]);
 
   // Fetch subtasks
   async function fetchSubtasks() {
-    const { data, error } = await supabase.from("subtasks").select("*").eq("task_id", task.id);
+    const { data, error } = await supabase
+      .from("subtasks")
+      .select("*")
+      .eq("task_id", task.id);
     if (!error) setSubtasks(data);
   }
 
   // Fetch comments
   async function fetchComments() {
-    const { data, error } = await supabase.from("comments").select("*, users(username)").eq("task_id", task.id);
+    const { data, error } = await supabase
+      .from("comments")
+      .select("*, users(username)")
+      .eq("task_id", task.id);
     if (!error) setComments(data);
   }
 
@@ -86,38 +47,56 @@ function TaskDetail({ task, onClose }) {
 
   // Handle status change
   async function updateStatus(newStatus) {
-    const { error } = await supabase.from("tasks").update({ status: newStatus }).eq("id", task.id);
+    const { error } = await supabase
+      .from("tasks")
+      .update({ status: newStatus })
+      .eq("id", task.id);
     if (!error) {
-      logActivity("Status changed", status, newStatus);
       setStatus(newStatus);
+      logActivity("Status changed", task.status, newStatus);
     }
   }
 
   // Add a subtask
   async function addSubtask() {
     if (!newSubtask.trim()) return;
-    const { data, error } = await supabase.from("subtasks").insert([{ task_id: task.id, content: newSubtask }]);
-    if (!error) setNewSubtask("");
+    const { data, error } = await supabase
+      .from("subtasks")
+      .insert([{ task_id: task.id, content: newSubtask }]);
+    if (!error) {
+      setSubtasks([...subtasks, data[0]]);
+      setNewSubtask("");
+    }
   }
 
   // Add a comment
   async function addComment() {
     if (!newComment.trim()) return;
     const { data: user } = await supabase.auth.getUser();
-    const { error } = await supabase.from("comments").insert([{ task_id: task.id, user_id: user.user.id, comment: newComment }]);
-    if (!error) setNewComment("");
+    const { data, error } = await supabase
+      .from("comments")
+      .insert([{ task_id: task.id, user_id: user.user.id, comment: newComment }]);
+    if (!error) {
+      setComments([...comments, { ...data[0], users: { username: user.user.email } }]);
+      setNewComment("");
+    }
   }
 
   // Log activity
   async function logActivity(action, oldValue = "", newValue = "") {
     const { data: user } = await supabase.auth.getUser();
-    await supabase.from("task_activity").insert([{ task_id: task.id, user_id: user.user.id, action, old_value: oldValue, new_value: newValue }]);
+    await supabase
+      .from("task_activity")
+      .insert([{ task_id: task.id, user_id: user.user.id, action, old_value: oldValue, new_value: newValue }]);
+    fetchActivity();
   }
 
   return (
     <div style={styles.overlay}>
       <div style={styles.modal}>
-        <button style={styles.closeButton} onClick={onClose}>✖</button>
+        <button style={styles.closeButton} onClick={onClose}>
+          ✖
+        </button>
         <h2>Task Details</h2>
         <p><strong>Content:</strong> {task.content}</p>
         <p><strong>Priority:</strong> {task.priority}</p>
@@ -139,7 +118,13 @@ function TaskDetail({ task, onClose }) {
             <li key={subtask.id}>{subtask.content} - {subtask.is_completed ? "✅" : "❌"}</li>
           ))}
         </ul>
-        <input type="text" value={newSubtask} onChange={(e) => setNewSubtask(e.target.value)} placeholder="Add new subtask" style={styles.input} />
+        <input
+          type="text"
+          value={newSubtask}
+          onChange={(e) => setNewSubtask(e.target.value)}
+          placeholder="Add new subtask"
+          style={styles.input}
+        />
         <button onClick={addSubtask} style={styles.button}>Add Subtask</button>
 
         {/* Comments Section */}
@@ -149,7 +134,13 @@ function TaskDetail({ task, onClose }) {
             <li key={comment.id}><strong>{comment.users?.username}:</strong> {comment.comment}</li>
           ))}
         </ul>
-        <input type="text" value={newComment} onChange={(e) => setNewComment(e.target.value)} placeholder="Add a comment" style={styles.input} />
+        <input
+          type="text"
+          value={newComment}
+          onChange={(e) => setNewComment(e.target.value)}
+          placeholder="Add a comment"
+          style={styles.input}
+        />
         <button onClick={addComment} style={styles.button}>Add Comment</button>
 
         {/* Activity Log */}
@@ -175,35 +166,50 @@ const styles = {
     height: "100%",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
     display: "flex",
-    alignItems: "center",
     justifyContent: "center",
+    alignItems: "center",
+    zIndex: 1000,
   },
   modal: {
-    background: "#fff",
+    backgroundColor: "white",
     padding: "20px",
-    borderRadius: "5px",
-    width: "400px",
+    borderRadius: "8px",
+    width: "500px",
+    position: "relative",
+    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    maxHeight: "90vh",
+    overflowY: "auto",
   },
   closeButton: {
     position: "absolute",
     top: "10px",
     right: "10px",
+    background: "none",
     border: "none",
-    background: "transparent",
-    fontSize: "16px",
+    fontSize: "20px",
     cursor: "pointer",
   },
   input: {
     width: "100%",
     padding: "8px",
-    marginBottom: "10px",
+    margin: "5px 0",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
   },
   button: {
-    padding: "8px",
-    background: "#007bff",
-    color: "#fff",
+    backgroundColor: "#007bff",
+    color: "white",
     border: "none",
+    padding: "8px 12px",
+    borderRadius: "4px",
     cursor: "pointer",
+  },
+  select: {
+    width: "100%",
+    padding: "8px",
+    margin: "5px 0",
+    borderRadius: "4px",
+    border: "1px solid #ccc",
   },
 };
 
