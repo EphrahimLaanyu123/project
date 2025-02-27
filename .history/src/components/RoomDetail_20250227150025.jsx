@@ -210,35 +210,6 @@ function RoomDetail() {
             </button>
           </div>
 
-          {/* Members List */}
-          <div>
-            <h3 className="text-xl font-semibold mb-2">Members</h3>
-            <ul className="list-disc list-inside">
-              {members.map((member) => (
-                <li key={member.user_id}>
-                  {member.username} {member.isCreator && "(Creator)"}
-                </li>
-              ))}
-            </ul>
-            {isCreator && (
-              <form onSubmit={handleAddMember} className="mt-4">
-                <input
-                  type="text"
-                  value={newMember}
-                  onChange={(e) => setNewMember(e.target.value)}
-                  placeholder="Enter username"
-                  className="border p-2 rounded mr-2"
-                />
-                <button
-                  type="submit"
-                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-                >
-                  Add Member
-                </button>
-              </form>
-            )}
-          </div>
-
           {/* Task List */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <div className="flex justify-between items-center mb-3">
@@ -254,8 +225,8 @@ function RoomDetail() {
             {tasks.length > 0 ? (
               <ul className="divide-y divide-gray-200">
                 {tasks.map((task) => (
-                  <li
-                    key={task.id}
+                  <li 
+                    key={task.id} 
                     className="py-3 px-2 hover:bg-gray-100 cursor-pointer transition-colors flex justify-between items-center"
                     onClick={() => setSelectedTask(task)}
                   >
