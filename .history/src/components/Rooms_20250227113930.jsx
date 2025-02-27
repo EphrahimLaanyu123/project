@@ -8,12 +8,12 @@ function Rooms() {
   const [addedRooms, setAddedRooms] = useState([]);
   const [user, setUser] = useState(null);
   const [roomName, setRoomName] = useState("");
-  const [errorMessage, setErrorMessage] = useState("");
+  const [errorMessage, setErrorMessage] = useState(""); // ✅ Store errors in state
   const navigate = useNavigate();
 
   useEffect(() => {
     async function fetchUserAndRooms() {
-      setErrorMessage("");
+      setErrorMessage(""); // ✅ Reset error before fetching
 
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData?.user) {
@@ -24,6 +24,7 @@ function Rooms() {
       const userId = authData.user.id;
       setUser(authData.user);
 
+      // Fetch username
       const { data: userData, error: userError } = await supabase
         .from("users")
         .select("username")
@@ -36,6 +37,7 @@ function Rooms() {
         setUser({ ...authData.user, username: userData?.username });
       }
 
+      // Fetch rooms created by user
       const { data: createdRooms, error: createdError } = await supabase
         .from("rooms")
         .select("*")
@@ -47,6 +49,7 @@ function Rooms() {
         setMyRooms(createdRooms || []);
       }
 
+      // Fetch rooms where user is a member
       const { data: memberRooms, error: memberError } = await supabase
         .from("room_members")
         .select("room_id")
@@ -76,9 +79,10 @@ function Rooms() {
     fetchUserAndRooms();
   }, []);
 
+  // Add a new room
   const addRoom = async (e) => {
     e.preventDefault();
-    setErrorMessage("");
+    setErrorMessage(""); // ✅ Reset error before trying to add
 
     if (!roomName.trim() || !user) {
       setErrorMessage("Room name cannot be empty.");
@@ -98,62 +102,54 @@ function Rooms() {
     }
   };
 
+  // Sign Out Function
   const signOut = async () => {
     await supabase.auth.signOut();
     navigate("/");
   };
 
   return (
-    <div className="p-6 max-w-lg mx-auto bg-white rounded-lg shadow-md">
+    <div style={{ padding: "20px" }}>
       {/* User Profile */}
       {user && (
-        <div className="flex items-center mb-4">
-          <FaUserCircle size={40} className="text-gray-600 mr-2" />
-          <p className="text-lg font-bold">{user.username || "User"}</p>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
+          <FaUserCircle size={40} style={{ marginRight: "10px" }} />
+          <p style={{ fontSize: "18px", fontWeight: "bold" }}>{user.username || "User"}</p>
         </div>
       )}
 
-      {/* Error Message */}
+      {/* 🔴 Display Error Messages */}
       {errorMessage && (
-        <p className="bg-red-100 text-red-700 px-4 py-2 rounded-md mb-4">
+        <p style={{ color: "red", background: "#ffe6e6", padding: "10px", borderRadius: "5px", marginBottom: "10px" }}>
           {errorMessage}
         </p>
       )}
 
-      <h2 className="text-2xl font-bold mb-4">Rooms</h2>
-      <button
-        onClick={signOut}
-        className="mb-4 px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition"
-      >
+      <h2>Rooms</h2>
+      <button onClick={signOut} style={{ marginBottom: "20px", cursor: "pointer" }}>
         Sign Out
       </button>
 
       {/* Add Room Form */}
-      <form onSubmit={addRoom} className="mb-4 flex gap-2">
-        <input
-          type="text"
-          value={roomName}
-          onChange={(e) => setRoomName(e.target.value)}
-          placeholder="Enter room name"
-          className="flex-1 p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-          required
+      <form onSubmit={addRoom} style={{ marginBottom: "20px" }}>
+        <input 
+          type="text" 
+          value={roomName} 
+          onChange={(e) => setRoomName(e.target.value)} 
+          placeholder="Enter room name" 
+          required 
         />
-        <button
-          type="submit"
-          className="px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition"
-        >
-          Add Room
-        </button>
+        <button type="submit">Add Room</button>
       </form>
 
       {/* My Rooms */}
-      <h3 className="text-xl font-semibold mb-2">My Rooms</h3>
+      <h3>My Rooms</h3>
       {myRooms.length > 0 ? (
-        <ul className="list-disc list-inside">
+        <ul>
           {myRooms.map((room) => (
-            <li
-              key={room.id}
-              className="cursor-pointer text-blue-600 underline mb-2 hover:text-blue-800 transition"
+            <li 
+              key={room.id} 
+              style={{ cursor: "pointer", textDecoration: "underline", marginBottom: "10px" }} 
               onClick={() => navigate(`/rooms/${room.id}`)}
             >
               {room.name} (Created by You)
@@ -161,17 +157,17 @@ function Rooms() {
           ))}
         </ul>
       ) : (
-        <p className="text-gray-500">No rooms created yet.</p>
+        <p>No rooms created yet.</p>
       )}
 
       {/* Added Rooms */}
-      <h3 className="text-xl font-semibold mt-4 mb-2">Rooms You've Joined</h3>
+      <h3>Rooms You've Joined</h3>
       {addedRooms.length > 0 ? (
-        <ul className="list-disc list-inside">
+        <ul>
           {addedRooms.map((room) => (
-            <li
-              key={room.id}
-              className="cursor-pointer text-blue-600 underline mb-2 hover:text-blue-800 transition"
+            <li 
+              key={room.id} 
+              style={{ cursor: "pointer", textDecoration: "underline", marginBottom: "10px" }} 
               onClick={() => navigate(`/rooms/${room.id}`)}
             >
               {room.name} (You are a member)
@@ -179,7 +175,7 @@ function Rooms() {
           ))}
         </ul>
       ) : (
-        <p className="text-gray-500">Not added to any rooms yet.</p>
+        <p>Not added to any rooms yet.</p>
       )}
     </div>
   );
