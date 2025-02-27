@@ -12,7 +12,6 @@ function RoomDetail() {
   const [user, setUser] = useState(null);
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [showChatModal, setShowChatModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
@@ -69,15 +68,7 @@ function RoomDetail() {
     <div className="max-w-4xl mx-auto p-6 bg-white">
       {room ? (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold border-b border-gray-200 pb-2">{room.name}</h2>
-            <button
-              onClick={() => setShowChatModal(true)}
-              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
-            >
-              Chat 💬
-            </button>
-          </div>
+          <h2 className="text-3xl font-bold border-b border-gray-200 pb-2">{room.name}</h2>
 
           {/* Task List */}
           <div className="bg-gray-50 p-4 rounded-lg">
@@ -119,7 +110,6 @@ function RoomDetail() {
           {/* Modals */}
           {showTaskModal && <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />}
           {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
-          {showChatModal && <ChatRoom roomId={roomId} user={user} onClose={() => setShowChatModal(false)} />}
         </div>
       ) : (
         <div className="flex justify-center items-center h-64">

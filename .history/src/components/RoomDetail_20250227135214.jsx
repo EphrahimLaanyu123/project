@@ -8,12 +8,15 @@ import ChatRoom from "./ChatRoom";
 function RoomDetail() {
   const { roomId } = useParams();
   const [room, setRoom] = useState(null);
+  const [members, setMembers] = useState([]);
   const [tasks, setTasks] = useState([]);
+  const [newMember, setNewMember] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
   const [user, setUser] = useState(null);
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [showChatModal, setShowChatModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
+  const [showChatModal, setShowChatModal] = useState(false);
 
   useEffect(() => {
     async function fetchRoomDetails() {
@@ -22,7 +25,58 @@ function RoomDetail() {
         .select("*")
         .eq("id", roomId)
         .single();
-      if (!error) setRoom(data);
+      if (error) setErrorMessage("Failed to load room details.");
+      else setRoom(data);
+    }
+
+    async function fetchRoomMembers() {
+      const { data: roomMembersData, error: roomMembersError } = await supabase
+        .from("room_members")
+        .select("user_id")
+        .eq("room_id", roomId);
+
+      if (roomMembersError) {
+        setErrorMessage("Failed to load room members.");
+        return;
+      }
+
+      let userIds = roomMembersData.map((member) => member.user_id);
+
+      const { data: roomData, error: roomError } = await supabase
+        .from("rooms")
+        .select("created_by")
+        .eq("id", roomId)
+        .single();
+
+      if (roomError) {
+        setErrorMessage("Failed to load room details.");
+        return;
+      }
+
+      if (!userIds.includes(roomData.created_by)) {
+        userIds.push(roomData.created_by);
+      }
+
+      const { data: usersData, error: usersError } = await supabase
+        .from("users")
+        .select("username, id")
+        .in("id", userIds);
+
+      if (usersError) {
+        setErrorMessage("Failed to load user details.");
+        return;
+      }
+
+      const combinedData = userIds.map((userId) => {
+        const user = usersData.find((u) => u.id === userId);
+        return {
+          user_id: user?.id,
+          username: user?.username,
+          isCreator: userId === roomData.created_by,
+        };
+      });
+
+      setMembers(combinedData.sort((a, b) => b.isCreator - a.isCreator));
     }
 
     async function fetchTasks() {
@@ -30,15 +84,25 @@ function RoomDetail() {
         .from("tasks")
         .select("*")
         .eq("room_id", roomId);
-      if (!error) setTasks(data);
+
+      if (error) {
+        setErrorMessage("Failed to load tasks.");
+      } else {
+        setTasks(data);
+      }
     }
 
     async function fetchUser() {
-      const { data: authData } = await supabase.auth.getUser();
-      if (authData?.user) setUser(authData.user);
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      if (authError || !authData?.user) {
+        setErrorMessage("Failed to get user information.");
+        return;
+      }
+      setUser(authData.user);
     }
 
     fetchRoomDetails();
+    fetchRoomMembers();
     fetchTasks();
     fetchUser();
 
@@ -67,30 +131,17 @@ function RoomDetail() {
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white">
+      {errorMessage && (
+        <div className="text-red-600 mb-4 p-2 bg-red-50 rounded">{errorMessage}</div>
+      )}
+
       {room ? (
         <div className="space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-3xl font-bold border-b border-gray-200 pb-2">{room.name}</h2>
-            <button
-              onClick={() => setShowChatModal(true)}
-              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
-            >
-              Chat 💬
-            </button>
-          </div>
+          <h2 className="text-3xl font-bold border-b border-gray-200 pb-2">{room.name}</h2>
 
           {/* Task List */}
           <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center mb-3">
-              <h3 className="text-xl font-semibold">Tasks</h3>
-              <button
-                onClick={() => setShowTaskModal(true)}
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-              >
-                Add Task
-              </button>
-            </div>
-
+            <h3 className="text-xl font-semibold mb-2">Tasks</h3>
             {tasks.length > 0 ? (
               <ul className="divide-y divide-gray-200">
                 {tasks.map((task) => (
@@ -119,11 +170,18 @@ function RoomDetail() {
           {/* Modals */}
           {showTaskModal && <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />}
           {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
-          {showChatModal && <ChatRoom roomId={roomId} user={user} onClose={() => setShowChatModal(false)} />}
         </div>
       ) : (
         <div className="flex justify-center items-center h-64">
-          <p>Loading room details...</p>
+          <div className="animate-pulse flex space-x-4">
+            <div className="flex-1 space-y-4 py-1">
+              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+              <div className="space-y-2">
+                <div className="h-4 bg-gray-200 rounded"></div>
+                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -3,10 +3,23 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "../supabase";
 import { User, UserCircle, LogOut, Plus, Home, Users } from "lucide-react";
 
+interface Room {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at?: string;
+}
+
+interface UserData {
+  id: string;
+  email?: string;
+  username?: string;
+}
+
 function Rooms() {
-  const [myRooms, setMyRooms] = useState([]);
-  const [addedRooms, setAddedRooms] = useState([]);
-  const [user, setUser] = useState(null);
+  const [myRooms, setMyRooms] = useState<Room[]>([]);
+  const [addedRooms, setAddedRooms] = useState<Room[]>([]);
+  const [user, setUser] = useState<UserData | null>(null);
   const [roomName, setRoomName] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
@@ -82,7 +95,7 @@ function Rooms() {
     fetchUserAndRooms();
   }, []);
 
-  const addRoom = async (e) => {
+  const addRoom = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage("");
 
