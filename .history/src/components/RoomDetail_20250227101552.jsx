@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../supabase";
-import Tasks from "./Tasks"; // Import the modal for adding tasks
-import TaskDetail from "./TaskDetail"; // Import the TaskDetail modal
+import Tasks from "./Tasks"; // Import the modal
 
 function RoomDetail() {
   const { roomId } = useParams();
@@ -14,7 +13,6 @@ function RoomDetail() {
   const [user, setUser] = useState(null);
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null); // State for task details modal
 
   useEffect(() => {
     async function fetchRoomDetails() {
@@ -167,14 +165,11 @@ function RoomDetail() {
           <h3>Tasks</h3>
           <ul>
             {tasks.map((task) => (
-              <li key={task.id} style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setSelectedTask(task)}>
+              <li key={task.id}>
                 {task.content} - <strong>{task.priority}</strong>
               </li>
             ))}
           </ul>
-
-          {/* Task Detail Modal */}
-          {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
         </>
       ) : (
         <p>Loading room details...</p>

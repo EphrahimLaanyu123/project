@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
 import { supabase } from "../supabase";
-import Tasks from "./Tasks"; // Import the modal for adding tasks
-import TaskDetail from "./TaskDetail"; // Import the TaskDetail modal
+import TaskDetail from "./TaskDetail"; // Modal for task details
+import "./RoomDetail.css"; // Optional additional styles for this page
 
 function RoomDetail() {
   const { roomId } = useParams();
@@ -14,7 +13,7 @@ function RoomDetail() {
   const [user, setUser] = useState(null);
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null); // State for task details modal
+  const [selectedTask, setSelectedTask] = useState(null); // For task modal
 
   useEffect(() => {
     async function fetchRoomDetails() {
@@ -66,10 +65,10 @@ function RoomDetail() {
       }
 
       const combinedData = userIds.map((userId) => {
-        const user = usersData.find((u) => u.id === userId);
+        const u = usersData.find((u) => u.id === userId);
         return {
-          user_id: user?.id,
-          username: user?.username,
+          user_id: u?.id,
+          username: u?.username,
           isCreator: userId === roomData.created_by,
         };
       });
@@ -107,8 +106,8 @@ function RoomDetail() {
     // Subscribe to real-time task changes
     const taskSubscription = supabase
       .channel("realtime:tasks")
-      .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks" }, (payload) => {
-        setTasks((prevTasks) => [...prevTasks, payload.new]); // Add new task to the list
+      .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks", filter: `room_id=eq.${roomId}` }, (payload) => {
+        setTasks((prevTasks) => [...prevTasks, payload.new]);
       })
       .subscribe();
 
@@ -123,10 +122,15 @@ function RoomDetail() {
     }
   }, [user, room]);
 
+  // When a task is clicked, open the TaskDetail modal
+  const handleTaskClick = (task) => {
+    setSelectedTask(task);
+  };
+
   return (
-    <div>
+    <div className="room-detail-container">
       {errorMessage && (
-        <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
+        <div className="error-message">{errorMessage}</div>
       )}
 
       {room ? (
@@ -157,27 +161,26 @@ function RoomDetail() {
             </form>
           )}
 
-          {/* Add Task Button */}
-          <button onClick={() => setShowTaskModal(true)}>Add Task</button>
-
-          {/* Task Modal */}
-          {showTaskModal && <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />}
-
           {/* Task List */}
           <h3>Tasks</h3>
-          <ul>
+          <ul className="task-list">
             {tasks.map((task) => (
-              <li key={task.id} style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setSelectedTask(task)}>
+              <li key={task.id} onClick={() => handleTaskClick(task)}>
                 {task.content} - <strong>{task.priority}</strong>
               </li>
             ))}
           </ul>
-
-          {/* Task Detail Modal */}
-          {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
         </>
       ) : (
         <p>Loading room details...</p>
+      )}
+
+      {/* Task Detail Modal */}
+      {selectedTask && (
+        <TaskDetail
+          task={selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
       )}
     </div>
   );

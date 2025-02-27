@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "../supabase";
-import Tasks from "./Tasks"; // Import the modal for adding tasks
-import TaskDetail from "./TaskDetail"; // Import the TaskDetail modal
+import Tasks from "./Tasks";
+import TaskDetail from "./TaskDetail"; // Import the modal
 
 function RoomDetail() {
   const { roomId } = useParams();
@@ -14,7 +14,7 @@ function RoomDetail() {
   const [user, setUser] = useState(null);
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
-  const [selectedTask, setSelectedTask] = useState(null); // State for task details modal
+  const [selectedTask, setSelectedTask] = useState(null);
 
   useEffect(() => {
     async function fetchRoomDetails() {
@@ -27,62 +27,11 @@ function RoomDetail() {
       else setRoom(data);
     }
 
-    async function fetchRoomMembers() {
-      const { data: roomMembersData, error: roomMembersError } = await supabase
-        .from("room_members")
-        .select("user_id")
-        .eq("room_id", roomId);
-
-      if (roomMembersError) {
-        setErrorMessage("Failed to load room members.");
-        return;
-      }
-
-      let userIds = roomMembersData.map((member) => member.user_id);
-
-      const { data: roomData, error: roomError } = await supabase
-        .from("rooms")
-        .select("created_by")
-        .eq("id", roomId)
-        .single();
-
-      if (roomError) {
-        setErrorMessage("Failed to load room details.");
-        return;
-      }
-
-      if (!userIds.includes(roomData.created_by)) {
-        userIds.push(roomData.created_by);
-      }
-
-      const { data: usersData, error: usersError } = await supabase
-        .from("users")
-        .select("username, id")
-        .in("id", userIds);
-
-      if (usersError) {
-        setErrorMessage("Failed to load user details.");
-        return;
-      }
-
-      const combinedData = userIds.map((userId) => {
-        const user = usersData.find((u) => u.id === userId);
-        return {
-          user_id: user?.id,
-          username: user?.username,
-          isCreator: userId === roomData.created_by,
-        };
-      });
-
-      setMembers(combinedData.sort((a, b) => b.isCreator - a.isCreator));
-    }
-
     async function fetchTasks() {
       const { data, error } = await supabase
         .from("tasks")
         .select("*")
         .eq("room_id", roomId);
-
       if (error) {
         setErrorMessage("Failed to load tasks.");
       } else {
@@ -100,15 +49,13 @@ function RoomDetail() {
     }
 
     fetchRoomDetails();
-    fetchRoomMembers();
     fetchTasks();
     fetchUser();
 
-    // Subscribe to real-time task changes
     const taskSubscription = supabase
       .channel("realtime:tasks")
       .on("postgres_changes", { event: "INSERT", schema: "public", table: "tasks" }, (payload) => {
-        setTasks((prevTasks) => [...prevTasks, payload.new]); // Add new task to the list
+        setTasks((prevTasks) => [...prevTasks, payload.new]);
       })
       .subscribe();
 
@@ -124,18 +71,16 @@ function RoomDetail() {
   }, [user, room]);
 
   return (
-    <div>
-      {errorMessage && (
-        <div style={{ color: "red", marginBottom: "10px" }}>{errorMessage}</div>
-      )}
+    <div className="room-container">
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
 
       {room ? (
         <>
-          <h2>{room.name}</h2>
-          <h3>Members</h3>
-          <ul>
+          <h2 className="room-title">{room.name}</h2>
+          <h3 className="room-subtitle">Members</h3>
+          <ul className="member-list">
             {members.map((member) => (
-              <li key={member.user_id}>
+              <li key={member.user_id} className="member-item">
                 {user && member.user_id === user.id
                   ? `You${member.isCreator ? " (Creator)" : ""}`
                   : `${member.username}${member.isCreator ? " (Creator)" : ""}`}
@@ -143,9 +88,8 @@ function RoomDetail() {
             ))}
           </ul>
 
-          {/* Add Member Form - Only visible to the creator */}
           {isCreator && (
-            <form onSubmit={() => {}}>
+            <form className="add-member-form">
               <input
                 type="text"
                 value={newMember}
@@ -157,24 +101,28 @@ function RoomDetail() {
             </form>
           )}
 
-          {/* Add Task Button */}
-          <button onClick={() => setShowTaskModal(true)}>Add Task</button>
+          <button onClick={() => setShowTaskModal(true)} className="add-task-button">
+            Add Task
+          </button>
 
-          {/* Task Modal */}
           {showTaskModal && <Tasks roomId={roomId} onClose={() => setShowTaskModal(false)} />}
 
-          {/* Task List */}
-          <h3>Tasks</h3>
-          <ul>
+          <h3 className="task-title">Tasks</h3>
+          <ul className="task-list">
             {tasks.map((task) => (
-              <li key={task.id} style={{ cursor: "pointer", textDecoration: "underline" }} onClick={() => setSelectedTask(task)}>
+              <li
+                key={task.id}
+                className="task-item"
+                onClick={() => setSelectedTask(task)}
+              >
                 {task.content} - <strong>{task.priority}</strong>
               </li>
             ))}
           </ul>
 
-          {/* Task Detail Modal */}
-          {selectedTask && <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />}
+          {selectedTask && (
+            <TaskDetail task={selectedTask} onClose={() => setSelectedTask(null)} />
+          )}
         </>
       ) : (
         <p>Loading room details...</p>
