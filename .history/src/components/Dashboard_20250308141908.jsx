@@ -14,7 +14,7 @@ const Dashboard = () => {
     async function fetchUser() {
       setIsLoading(true);
       setErrorMessage("");
-
+                                       
       const { data: authData, error: authError } = await supabase.auth.getUser();
       if (authError || !authData?.user) {
         setErrorMessage("Failed to get user information.");

@@ -16,7 +16,7 @@ function RoomDetail() {
   const [isCreator, setIsCreator] = useState(false);
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
-  const [showChatModal, setShowChatModal] = useState(false);
+  const [showChatModal, setShowChatModal] = useState(false); // Add state for chat modal
 
   useEffect(() => {
     async function fetchRoomDetails() {
@@ -107,6 +107,7 @@ function RoomDetail() {
     fetchUser();
     fetchTasks();
 
+    // Real-time subscription for room_members
     const memberSubscription = supabase
       .channel("realtime:room_members")
       .on(
@@ -114,7 +115,7 @@ function RoomDetail() {
         { event: "INSERT", schema: "public", table: "room_members" },
         (payload) => {
           console.log("New member added:", payload.new);
-          fetchRoomMembers();
+          fetchRoomMembers(); // Refresh the members list
         }
       )
       .subscribe();
@@ -126,7 +127,7 @@ function RoomDetail() {
         { event: "*", schema: "public", table: "tasks" },
         (payload) => {
           console.log("Task change:", payload);
-          fetchTasks();
+          fetchTasks(); // Refresh the tasks list
         }
       )
       .subscribe();
@@ -194,107 +195,85 @@ function RoomDetail() {
     }
   }
 
+
   return (
-    <div className="max-w-5xl mx-auto p-8">
+    <div className="max-w-4xl mx-auto p-6 bg-white">
       {room ? (
-        <div className="space-y-8">
-          <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
-                {room.name}
-              </h2>
+        <div className="space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-3xl font-bold border-b border-gray-200 pb-2">{room.name}</h2>
+            <button
+              onClick={() => setShowChatModal(true)}
+              className="bg-black text-white px-4 py-2 rounded hover:bg-gray-800 transition"
+            >
+              Chat 💬
+            </button>
+          </div>
+
+          {/* Members List */}
+          <div>
+            <h3 className="text-xl font-semibold mb-2">Members</h3>
+            <ul className="list-disc list-inside">
+              {members.map((member) => (
+                <li key={member.user_id}>
+                  {member.username} {member.isCreator && "(Creator)"}
+                </li>
+              ))}
+            </ul>
+            {isCreator && (
+              <form onSubmit={handleAddMember} className="mt-4">
+                <input
+                  type="text"
+                  value={newMember}
+                  onChange={(e) => setNewMember(e.target.value)}
+                  placeholder="Enter username"
+                  className="border p-2 rounded mr-2"
+                />
+                <button
+                  type="submit"
+                  className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+                >
+                  Add Member
+                </button>
+              </form>
+            )}
+          </div>
+
+          {/* Task List */}
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <div className="flex justify-between items-center mb-3">
+              <h3 className="text-xl font-semibold">Tasks</h3>
               <button
-                onClick={() => setShowChatModal(true)}
-                className="bg-gradient-to-r from-gray-900 to-gray-700 text-white px-6 py-2.5 rounded-lg hover:from-gray-800 hover:to-gray-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center gap-2"
+                onClick={() => setShowTaskModal(true)}
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
               >
-                Chat Room 💬
+                Add Task
               </button>
             </div>
 
-            {/* Members Section */}
-            <div className="bg-gray-50 rounded-xl p-6 mb-6">
-              <h3 className="text-xl font-semibold mb-4 text-gray-800">Team Members</h3>
-              <div className="grid gap-3">
-                {members.map((member) => (
-                  <div
-                    key={member.user_id}
-                    className="flex items-center justify-between bg-white p-3 rounded-lg shadow-sm border border-gray-100"
+            {tasks.length > 0 ? (
+              <ul className="divide-y divide-gray-200">
+                {tasks.map((task) => (
+                  <li
+                    key={task.id}
+                    className="py-3 px-2 hover:bg-gray-100 cursor-pointer transition-colors flex justify-between items-center"
+                    onClick={() => setSelectedTask(task)}
                   >
-                    <span className="font-medium text-gray-700">{member.username}</span>
-                    {member.isCreator && (
-                      <span className="bg-gray-900 text-white text-xs px-3 py-1 rounded-full">
-                        Creator
-                      </span>
-                    )}
-                  </div>
+                    <span>{task.content}</span>
+                    <span className={`px-2 py-1 text-xs rounded ${
+                      task.priority === 'high' ? 'bg-black text-white' :
+                      task.priority === 'medium' ? 'bg-gray-600 text-white' :
+                      task.priority === 'urgent' ? 'bg-gray-900 text-white' :
+                      'bg-gray-200 text-black'
+                    }`}>
+                      {task.priority}
+                    </span>
+                  </li>
                 ))}
-              </div>
-
-              {isCreator && (
-                <form onSubmit={handleAddMember} className="mt-6">
-                  <div className="flex gap-3">
-                    <input
-                      type="text"
-                      value={newMember}
-                      onChange={(e) => setNewMember(e.target.value)}
-                      placeholder="Enter username to add"
-                      className="flex-1 border border-gray-200 p-2.5 rounded-lg focus:ring-2 focus:ring-gray-200 focus:border-gray-400 transition-all duration-200"
-                    />
-                    <button
-                      type="submit"
-                      className="bg-gray-900 text-white px-6 py-2.5 rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                    >
-                      Add Member
-                    </button>
-                  </div>
-                </form>
-              )}
-            </div>
-
-            {/* Tasks Section */}
-            <div className="bg-gray-50 rounded-xl p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold text-gray-800">Tasks</h3>
-                <button
-                  onClick={() => setShowTaskModal(true)}
-                  className="bg-gray-900 text-white px-5 py-2.5 rounded-lg hover:bg-gray-800 transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                >
-                  Add New Task
-                </button>
-              </div>
-
-              {tasks.length > 0 ? (
-                <div className="space-y-3">
-                  {tasks.map((task) => (
-                    <div
-                      key={task.id}
-                      onClick={() => setSelectedTask(task)}
-                      className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-all duration-200 cursor-pointer group"
-                    >
-                      <div className="flex justify-between items-center">
-                        <span className="text-gray-700 group-hover:text-gray-900 transition-colors duration-200">
-                          {task.content}
-                        </span>
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-medium ${
-                            task.priority === 'high' ? 'bg-red-100 text-red-700' :
-                            task.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                            task.priority === 'urgent' ? 'bg-purple-100 text-purple-700' :
-                            'bg-blue-100 text-blue-700'
-                          }`}
-                        >
-                          {task.priority}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-500 italic">No tasks created yet</p>
-                </div>
-              )}
-            </div>
+              </ul>
+            ) : (
+              <p className="text-gray-500 italic">No tasks yet</p>
+            )}
           </div>
 
           {/* Modals */}
@@ -304,7 +283,7 @@ function RoomDetail() {
         </div>
       ) : (
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-900 border-t-transparent"></div>
+          <p>Loading room details...</p>
         </div>
       )}
     </div>

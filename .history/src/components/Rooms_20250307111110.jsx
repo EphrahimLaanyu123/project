@@ -175,7 +175,7 @@ function Rooms() {
                 {myRooms.map((room) => (
                   <li key={room.id} className="py-3">
                     <button
-                      onClick={() => navigate(`/dashboard/rooms/${room.id}`)}
+                      onClick={() => navigate(`/rooms/${room.id}`)}
                       className="w-full text-left flex items-center justify-between hover:bg-gray-50 p-2 rounded-md transition-colors"
                     >
                       <span className="text-sm font-medium text-gray-900">{room.name}</span>
@@ -202,7 +202,7 @@ function Rooms() {
                 {addedRooms.map((room) => (
                   <li key={room.id} className="py-3">
                     <button
-                      onClick={() => navigate(`/dashboard/rooms/${room.id}`)}
+                      onClick={() => navigate(`/rooms/${room.id}`)}
                       className="w-full text-left flex items-center justify-between hover:bg-gray-50 p-2 rounded-md transition-colors"
                     >
                       <span className="text-sm font-medium text-gray-900">{room.name}</span>

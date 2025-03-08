@@ -23,7 +23,7 @@ function Auth() {
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       if (session?.user) {
-        navigate("/dashboard");
+        navigate("/rooms");
       }
     });
 
@@ -50,7 +50,7 @@ function Auth() {
       alert(error.message);
     } else {
       alert("Signed in successfully!");
-      navigate("/dashboard");
+      navigate("/rooms");
     }
   };
 

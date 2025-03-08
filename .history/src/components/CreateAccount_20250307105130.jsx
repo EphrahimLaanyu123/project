@@ -31,7 +31,7 @@ function CreateAccount() {
         alert(insertError.message);
       } else {
         alert("Username saved!");
-        navigate("/room"); // ✅ Redirect to Dashboard after successful account creation
+        navigate("/dashboard"); // ✅ Redirect to Dashboard after successful account creation
       }
     } catch (err) {
       console.error("Error saving username:", err);

@@ -4,11 +4,10 @@ import CreateAccount from "./components/CreateAccount";
 import Dashboard from "./components/Dashboard";
 import Rooms from "./components/Rooms";
 import RoomDetail from "./components/RoomDetail";
-import CalendarComponent from "./components/Calendar";
 
 function App() {
   return (
-    <Router>
+    <Router cl>
       <Routes>
         <Route path="/" element={<Auth />} />
         <Route path="/create-account" element={<CreateAccount />} />
@@ -16,7 +15,6 @@ function App() {
         {/* Dashboard Routes */}
         <Route path="/dashboard/*" element={<Dashboard />}>
           <Route path="rooms" element={<Rooms />} />
-          <Route path="calendar" element={<CalendarComponent />} />
           <Route path="rooms/:roomId" element={<RoomDetail />} />
         </Route>
       </Routes>

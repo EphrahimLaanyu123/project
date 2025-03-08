@@ -50,7 +50,7 @@ function Auth() {
       alert(error.message);
     } else {
       alert("Signed in successfully!");
-      navigate("/dashboard");
+      navigate("/rooms");
     }
   };
 

@@ -2,7 +2,6 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "../supabase";
 import { LogOut, UserCircle, LayoutDashboard } from "lucide-react";
-import "../App.css"
 
 const Dashboard = () => {
   const [user, setUser] = useState(null);
@@ -58,7 +57,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="dashboard flex h-screen bg-gray-50">
+    <div className="flex h-screen bg-gray-50">
       {/* Sidebar */}
       <aside className="w-72 bg-white border-r border-gray-200 shadow-lg fixed h-full transition-all duration-300 ease-in-out">
         <div className="p-6">

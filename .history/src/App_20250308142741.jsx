@@ -4,7 +4,7 @@ import CreateAccount from "./components/CreateAccount";
 import Dashboard from "./components/Dashboard";
 import Rooms from "./components/Rooms";
 import RoomDetail from "./components/RoomDetail";
-import CalendarComponent from "./components/Calendar";
+import calenda
 
 function App() {
   return (
@@ -16,7 +16,7 @@ function App() {
         {/* Dashboard Routes */}
         <Route path="/dashboard/*" element={<Dashboard />}>
           <Route path="rooms" element={<Rooms />} />
-          <Route path="calendar" element={<CalendarComponent />} />
+          <Route path="calendar" element={<Rooms />} />
           <Route path="rooms/:roomId" element={<RoomDetail />} />
         </Route>
       </Routes>
