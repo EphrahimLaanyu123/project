@@ -231,7 +231,6 @@ const Dashboard = () => {
                         <Outlet />
                     </div>
                 </main>
-                <BottomNavBar></BottomNavBar>
             </div>
         </div>
     );

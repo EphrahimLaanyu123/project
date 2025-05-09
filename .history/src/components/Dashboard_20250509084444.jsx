@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { supabase } from "../supabase";
 import { LogOut, UserCircle, LayoutDashboard, CheckCircle2, MessageCircle } from "lucide-react";
-import BottomNavBar from "./BottomNavBar";
 import "../App.css";
 
 const Dashboard = () => {
@@ -100,7 +99,7 @@ const Dashboard = () => {
     return (
         <div className="dashboard flex h-screen bg-gray-50">
             {/* Sidebar */}
-            <aside className="w-72 bg-white border-r border-gray-200 shadow-lg fixed h-full transition-all duration-300 ease-in-out">
+            {/* <aside className="w-72 bg-white border-r border-gray-200 shadow-lg fixed h-full transition-all duration-300 ease-in-out">
                 <div className="p-6">
                     <div className="flex items-center gap-3 mb-8">
                         <LayoutDashboard className="h-8 w-8 text-black" />
@@ -128,7 +127,7 @@ const Dashboard = () => {
                         </ul>
                     </nav>
                 </div>
-            </aside>
+            </aside> */}
 
             {/* Main Content Wrapper */}
             <div className="flex flex-col flex-1 ml-72">
@@ -231,7 +230,6 @@ const Dashboard = () => {
                         <Outlet />
                     </div>
                 </main>
-                <BottomNavBar></BottomNavBar>
             </div>
         </div>
     );

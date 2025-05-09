@@ -7,7 +7,7 @@ function Tasks({ roomId, onClose }) {
   const [priority, setPriority] = useState("low");
   const [assignedTo, setAssignedTo] = useState(null);
   const [roomUsers, setRoomUsers] = useState([]);
-  const [deadline, setDeadline] = useState(""); // Added state for deadline
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null); // Added state for current user's ID
 
   useEffect(() => {
     const fetchRoomUsers = async () => {
@@ -47,7 +47,15 @@ function Tasks({ roomId, onClose }) {
       }
     };
 
+    const fetchCurrentUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        setCurrentUserId(user.id);
+      }
+    };
+
     fetchRoomUsers();
+    fetchCurrentUser(); // Fetch current user ID
   }, [roomId]);
 
   const addTask = async (e) => {
@@ -70,7 +78,6 @@ function Tasks({ roomId, onClose }) {
             content: taskContent,
             priority,
             created_by: (await supabase.auth.getUser()).data.user?.id,
-            deadline: deadline, // Include deadline in the insert
           },
         ])
         .select("id");
@@ -99,7 +106,6 @@ function Tasks({ roomId, onClose }) {
 
       setTaskContent("");
       setAssignedTo(null);
-      setDeadline(""); // Reset deadline
       onClose();
     } catch (error) {
       await supabase.rpc("rollback");
@@ -167,25 +173,17 @@ function Tasks({ roomId, onClose }) {
               className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
             >
               <option value="">Unassigned</option>
+              {currentUserId && (
+                <option key={currentUserId} value={currentUserId}>
+                  Myself
+                </option>
+              )}
               {roomUsers.map((user) => (
                 <option key={user.id} value={user.id}>
                   {user.username}
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
-              Deadline
-            </label>
-            <input
-              id="deadline"
-              type="datetime-local" // Use datetime-local for date and time input
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
-            />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

@@ -6,7 +6,6 @@ import Rooms from "./components/Rooms";
 import RoomDetail from "./components/RoomDetail";
 import CalendarComponent from "./components/Calendar";
 import Messages from "./components/Messages";
-import TaskCalendar from "./components/TaskCalendar";
 
 function App() {
   return (
@@ -16,8 +15,7 @@ function App() {
         <Route path="/create-account" element={<CreateAccount />} />
         <Route path="rooms" element={<Rooms />} />
         <Route path="rooms/:roomId" element={<RoomDetail />} />
-        <Route path="messages" element={<Messages />} />
-        <Route path="calendar" element={<TaskCalendar />} />
+        <Route path="rooms/:roomId" element={<RoomDetail />} />
 
 
 

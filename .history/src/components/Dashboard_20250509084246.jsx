@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { supabase } from "../supabase";
 import { LogOut, UserCircle, LayoutDashboard, CheckCircle2, MessageCircle } from "lucide-react";
-import BottomNavBar from "./BottomNavBar";
 import "../App.css";
 
 const Dashboard = () => {
@@ -231,7 +230,6 @@ const Dashboard = () => {
                         <Outlet />
                     </div>
                 </main>
-                <BottomNavBar></BottomNavBar>
             </div>
         </div>
     );

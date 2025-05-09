@@ -7,7 +7,6 @@ function Tasks({ roomId, onClose }) {
   const [priority, setPriority] = useState("low");
   const [assignedTo, setAssignedTo] = useState(null);
   const [roomUsers, setRoomUsers] = useState([]);
-  const [deadline, setDeadline] = useState(""); // Added state for deadline
 
   useEffect(() => {
     const fetchRoomUsers = async () => {
@@ -25,11 +24,12 @@ function Tasks({ roomId, onClose }) {
       }
 
       if (!members || members.length === 0) {
-        setRoomUsers([]);
-        return;
+          setRoomUsers([]);
+          return;
       }
 
       const userIds = members.map((member) => member.user_id);
+
 
       const { data: users, error: usersError } = await supabase
         .from("users")
@@ -42,9 +42,10 @@ function Tasks({ roomId, onClose }) {
         return;
       }
 
-      if (users) {
+      if(users){
         setRoomUsers(users);
       }
+
     };
 
     fetchRoomUsers();
@@ -70,7 +71,6 @@ function Tasks({ roomId, onClose }) {
             content: taskContent,
             priority,
             created_by: (await supabase.auth.getUser()).data.user?.id,
-            deadline: deadline, // Include deadline in the insert
           },
         ])
         .select("id");
@@ -99,7 +99,6 @@ function Tasks({ roomId, onClose }) {
 
       setTaskContent("");
       setAssignedTo(null);
-      setDeadline(""); // Reset deadline
       onClose();
     } catch (error) {
       await supabase.rpc("rollback");
@@ -173,19 +172,6 @@ function Tasks({ roomId, onClose }) {
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
-              Deadline
-            </label>
-            <input
-              id="deadline"
-              type="datetime-local" // Use datetime-local for date and time input
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
-            />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">

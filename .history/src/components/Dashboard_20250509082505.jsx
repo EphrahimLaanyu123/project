@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { supabase } from "../supabase";
-import { LogOut, UserCircle, LayoutDashboard, CheckCircle2, MessageCircle } from "lucide-react";
-import BottomNavBar from "./BottomNavBar";
+import { LogOut, UserCircle, LayoutDashboard, CheckCircle2 } from "lucide-react";
 import "../App.css";
 
 const Dashboard = () => {
@@ -11,7 +10,6 @@ const Dashboard = () => {
     const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
     const [assignedTasks, setAssignedTasks] = useState([]);
-    const [unreadMessages, setUnreadMessages] = useState(0);
 
     useEffect(() => {
         async function fetchUser() {
@@ -55,20 +53,6 @@ const Dashboard = () => {
                     toDo: item.tasks.status, // Rename status to toDo
                 }));
                 setAssignedTasks(tasks);
-            }
-
-            // Fetch unread messages
-            const { data: unreadData, error: unreadError } = await supabase
-                .from("chats")
-                .select("count(*)", { count: 'exact' })
-                .eq("is_read", false)  // Add this line
-                .neq("user_id", userId); //and this line
-
-            if (unreadError) {
-                console.error("Error fetching unread messages:", unreadError);
-                setErrorMessage("Failed to fetch unread messages.");
-            } else if (unreadData && unreadData[0]?.count) {
-                setUnreadMessages(parseInt(unreadData[0].count, 10));
             }
 
             setIsLoading(false);
@@ -118,11 +102,6 @@ const Dashboard = () => {
                                     <span className="text-lg font-medium group-hover:translate-x-1 transition-transform duration-200">
                                         Rooms
                                     </span>
-                                    {unreadMessages > 0 && (
-                                        <span className="ml-2 text-xs font-semibold text-red-500 bg-red-100 rounded-full px-2 py-1">
-                                            {unreadMessages} Unread
-                                        </span>
-                                    )}
                                 </Link>
                             </li>
                         </ul>
@@ -147,15 +126,6 @@ const Dashboard = () => {
                                     <div>
                                         <p className="text-sm font-semibold text-gray-900">{user.username || "User"}</p>
                                         <p className="text-xs text-gray-500">{user.email}</p>
-                                    </div>
-                                </div>
-                                 <div className="flex items-center space-x-3">
-                                    <div className="bg-gradient-to-br from-gray-100 to-gray-200 rounded-full p-2 shadow-md">
-                                         <MessageCircle className="h-7 w-7 text-gray-700" />
-                                    </div>
-                                    <div>
-                                         <p className="text-sm font-semibold text-gray-900">Messages</p>
-                                         <p className="text-xs text-gray-500">{unreadMessages} Unread</p>
                                     </div>
                                 </div>
                                 <button
@@ -231,7 +201,6 @@ const Dashboard = () => {
                         <Outlet />
                     </div>
                 </main>
-                <BottomNavBar></BottomNavBar>
             </div>
         </div>
     );

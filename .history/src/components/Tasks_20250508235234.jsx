@@ -7,43 +7,39 @@ function Tasks({ roomId, onClose }) {
   const [priority, setPriority] = useState("low");
   const [assignedTo, setAssignedTo] = useState(null);
   const [roomUsers, setRoomUsers] = useState([]);
-  const [deadline, setDeadline] = useState(""); // Added state for deadline
 
   useEffect(() => {
     const fetchRoomUsers = async () => {
       if (!roomId) return;
 
-      const { data: members, error } = await supabase
-        .from("room_members")
+      const { data: users, error } = await supabase
+        .from("room_users")
         .select("user_id")
         .eq("room_id", roomId);
 
       if (error) {
-        console.error("Error fetching room members:", error);
-        setErrorMessage("Failed to fetch room members. Please try again.");
+        console.error("Error fetching room users:", error);
         return;
       }
 
-      if (!members || members.length === 0) {
+      if (!users || users.length === 0) {
         setRoomUsers([]);
         return;
       }
 
-      const userIds = members.map((member) => member.user_id);
+      const userIds = users.map((ru) => ru.user_id);
 
-      const { data: users, error: usersError } = await supabase
+      const { data: userDetails, error: userDetailsError } = await supabase
         .from("users")
-        .select("id, username") // Changed from name to username
+        .select("id, name")
         .in("id", userIds);
 
-      if (usersError) {
-        console.error("Error fetching users:", usersError);
-        setErrorMessage("Failed to fetch user details.");
+      if (userDetailsError) {
+        console.error("Error fetching user details:", userDetailsError);
         return;
       }
-
-      if (users) {
-        setRoomUsers(users);
+      if (userDetails) {
+        setRoomUsers(userDetails);
       }
     };
 
@@ -70,7 +66,6 @@ function Tasks({ roomId, onClose }) {
             content: taskContent,
             priority,
             created_by: (await supabase.auth.getUser()).data.user?.id,
-            deadline: deadline, // Include deadline in the insert
           },
         ])
         .select("id");
@@ -99,13 +94,13 @@ function Tasks({ roomId, onClose }) {
 
       setTaskContent("");
       setAssignedTo(null);
-      setDeadline(""); // Reset deadline
       onClose();
     } catch (error) {
       await supabase.rpc("rollback");
       setErrorMessage("Failed to add task: " + error.message);
       console.error("Transaction Error:", error);
     }
+    
   };
 
   return (
@@ -169,23 +164,10 @@ function Tasks({ roomId, onClose }) {
               <option value="">Unassigned</option>
               {roomUsers.map((user) => (
                 <option key={user.id} value={user.id}>
-                  {user.username}
+                  {user.name}
                 </option>
               ))}
             </select>
-          </div>
-
-          <div>
-            <label htmlFor="deadline" className="block text-sm font-medium text-gray-700 mb-1">
-              Deadline
-            </label>
-            <input
-              id="deadline"
-              type="datetime-local" // Use datetime-local for date and time input
-              value={deadline}
-              onChange={(e) => setDeadline(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-black"
-            />
           </div>
 
           <div className="flex justify-end space-x-2 pt-4">
