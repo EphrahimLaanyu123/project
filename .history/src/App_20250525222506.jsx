@@ -8,6 +8,7 @@ import CalendarComponent from "./components/Calendar";
 import Messages from "./components/Messages";
 import TaskCalendar from "./components/TaskCalendar";
 
+
 function App() {
   return (
     <Router>
@@ -21,11 +22,20 @@ function App() {
 
 
         {/* Dashboard Routes */}
-        <Route path="/dashboard/*" element={<Dashboard />}>
+        {/* <Route path="/dashboard/*" element={<Dashboard />}>
           <Route path="calendar" element={<CalendarComponent />} />
           <Route path="rooms" element={<Rooms />} />
           <Route path="rooms/:roomId" element={<RoomDetail />} />
-        </Route>
+        </Route> */}
+                        <Route path="/dashboard" element={<Dashboard />}>
+                    {/* Default content for /dashboard - MainContent */}
+                    <Route index element={<DashboardContent />} /> {/* See DashboardContent component below */}
+                    {/* This route will render RoomsPage inside the Dashboard's Outlet */}
+                    <Route path="rooms" element={<RoomsPage />} />
+                    {/* Add other nested routes if needed, e.g., for /tasks, /teams */}
+                    {/* <Route path="tasks" element={<TasksPage />} /> */}
+                    {/* <Route path="teams" element={<TeamsPage />} /> */}
+                </Route>
       </Routes>
     </Router>
   );

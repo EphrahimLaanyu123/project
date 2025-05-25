@@ -7,6 +7,7 @@ import RoomDetail from "./components/RoomDetail";
 import CalendarComponent from "./components/Calendar";
 import Messages from "./components/Messages";
 import TaskCalendar from "./components/TaskCalendar";
+import MainContent from "./components/MainContent";
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
 
         {/* Dashboard Routes */}
         <Route path="/dashboard/*" element={<Dashboard />}>
+          <Route path="calendar" element={<CalendarComponent />} />
           <Route path="calendar" element={<CalendarComponent />} />
           <Route path="rooms" element={<Rooms />} />
           <Route path="rooms/:roomId" element={<RoomDetail />} />

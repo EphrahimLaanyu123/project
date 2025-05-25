@@ -158,7 +158,7 @@ const Dashboard = () => {
                         <Routes>
                             {/* The index route renders when the path is exactly /dashboard */}
                             <Route index element={
-                                <MainContent
+                                <DashboardContent
                                     user={user}
                                     assignedTasks={assignedTasks}
                                     taskCounts={taskCounts}
@@ -172,7 +172,8 @@ const Dashboard = () => {
                             {/* Route for Calendar */}
                             <Route path="calendar" element={<CalendarComponent />} />
                             {/* Add routes for Tasks and Teams as needed */}
-
+                            <Route path="tasks" element={<Tasks />} />
+                            <Route path="teams" element={<Teams />} />
                             {/* You can add a catch-all for unknown nested paths, e.g., a 404 for dashboard */}
                             {/* <Route path="*" element={<div>Dashboard Nested 404 Not Found</div>} /> */}
                         </Routes>

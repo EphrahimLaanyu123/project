@@ -21,12 +21,12 @@ function App() {
 
 
         {/* Dashboard Routes */}
-        <Route path="/dashboard/*" element={<Dashboard />}>
+        {/* <Route path="/dashboard/*" element={<Dashboard />}>
           <Route path="calendar" element={<CalendarComponent />} />
           <Route path="rooms" element={<Rooms />} />
           <Route path="rooms/:roomId" element={<RoomDetail />} />
         </Route>
-      </Routes>
+      </Routes> */}
     </Router>
   );
 }

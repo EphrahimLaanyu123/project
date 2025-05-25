@@ -1,20 +1,12 @@
 // src/components/Dashboard.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, Routes, Route, Outlet } from 'react-router-dom'; // Import Routes, Route, and Outlet
+import { useNavigate } from 'react-router-dom';
 import { supabase } from "../supabase";
 import BottomNavBar from "./BottomNavBar";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-// Import the components that will be rendered inside the Dashboard's Outlet
-import Rooms from "./Rooms"; // Your Rooms component
-import RoomDetail from "./RoomDetail"; // Your RoomDetail component
-import CalendarComponent from "./Calendar"; // Your Calendar component
-// Import other components you might want to render inside the dashboard, e.g., Tasks, Teams
-import MainContent from "./MainContent";
-
-
-import './Dashboard.css';
-
+import Sidebar from "./Sidebar"; // Import Sidebar
+import Header from "./Header";   // Import Header
+import MainContent from "./MainContent"; // Import MainContent
+import './Dashboard.css'; // Your existing Dashboard CSS
 
 
 const Dashboard = () => {
@@ -126,10 +118,8 @@ const Dashboard = () => {
         }
     };
 
-    // This handleTaskClick assumes it's navigating to a room detail page
     const handleTaskClick = (roomId) => {
-        // Correct path for nested routing: relative to the dashboard route
-        navigate(`rooms/${roomId}`);
+        navigate(`/rooms/${roomId}`);
     };
 
     if (isLoading) {
@@ -145,49 +135,16 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            {/* Sidebar is always present */}
             <Sidebar unreadMessages={unreadMessages} />
-
             <div className="main-content-wrapper">
-                {/* Header is always present */}
                 <Header user={user} signOut={signOut} />
-
-                {/* The main content area where nested routes will render */}
-                <main className="main-content">
-                    <div className="max-width-container">
-                        <Routes>
-                            {/* The index route renders when the path is exactly /dashboard */}
-                            <Route index element={
-                                <MainContent
-                                    user={user}
-                                    assignedTasks={assignedTasks}
-                                    taskCounts={taskCounts}
-                                    handleTaskClick={handleTaskClick}
-                                />
-                            } />
-                            {/* Route for Rooms, will replace DashboardContent */}
-                            <Route path="rooms" element={<Rooms />} />
-                            {/* Route for RoomDetail, nested under rooms */}
-                            <Route path="rooms/:roomId" element={<RoomDetail />} />
-                            {/* Route for Calendar */}
-                            <Route path="calendar" element={<CalendarComponent />} />
-                            {/* Add routes for Tasks and Teams as needed */}
-
-                            {/* You can add a catch-all for unknown nested paths, e.g., a 404 for dashboard */}
-                            {/* <Route path="*" element={<div>Dashboard Nested 404 Not Found</div>} /> */}
-                        </Routes>
-                        {/* If you pass context using Outlet, you'd use <Outlet context={{ ... }} /> here
-                            and remove the direct prop passing in the Route elements.
-                            Given the complexity of your data, passing context is cleaner:
-                            <Outlet context={{ user, assignedTasks, taskCounts, handleTaskClick }} />
-                            And then in DashboardContent, Rooms, etc., use:
-                            const { user, assignedTasks, taskCounts, handleTaskClick } = useOutletContext();
-                        */}
-                    </div>
-                </main>
-
-                {/* BottomNavBar is always present */}
-                <BottomNavBar />
+                <MainContent
+                    user={user}
+                    assignedTasks={assignedTasks}
+                    taskCounts={taskCounts}
+                    handleTaskClick={handleTaskClick}
+                />
+                {/* <BottomNavBar /> */}
             </div>
         </div>
     );

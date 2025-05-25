@@ -1,21 +1,10 @@
-// src/components/Dashboard.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, Routes, Route, Outlet } from 'react-router-dom'; // Import Routes, Route, and Outlet
+import { Link, Outlet, useNavigate } from 'react-router-dom';
 import { supabase } from "../supabase";
+import { LogOut, UserCircle, LayoutDashboard, CheckCircle2, MessageCircle, Home, ListTodo, Users } from "lucide-react";
 import BottomNavBar from "./BottomNavBar";
-import Sidebar from "./Sidebar";
-import Header from "./Header";
-// Import the components that will be rendered inside the Dashboard's Outlet
-import Rooms from "./Rooms"; // Your Rooms component
-import RoomDetail from "./RoomDetail"; // Your RoomDetail component
-import CalendarComponent from "./Calendar"; // Your Calendar component
-// Import other components you might want to render inside the dashboard, e.g., Tasks, Teams
-import MainContent from "./MainContent";
-
-
+import DashboardHomeContent from './DashboardHomeContent'; // Import the new component
 import './Dashboard.css';
-
-
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -126,10 +115,8 @@ const Dashboard = () => {
         }
     };
 
-    // This handleTaskClick assumes it's navigating to a room detail page
     const handleTaskClick = (roomId) => {
-        // Correct path for nested routing: relative to the dashboard route
-        navigate(`rooms/${roomId}`);
+        navigate(`/rooms/${roomId}`);
     };
 
     if (isLoading) {
@@ -145,49 +132,84 @@ const Dashboard = () => {
 
     return (
         <div className="dashboard-container">
-            {/* Sidebar is always present */}
-            <Sidebar unreadMessages={unreadMessages} />
+            {/* Sidebar remains here */}
+            <aside className="sidebar">
+                <div className="sidebar-header">
+                    <LayoutDashboard className="sidebar-icon" />
+                    <h2 className="sidebar-title">Dashboard</h2>
+                </div>
+                <nav>
+                    <ul className="sidebar-nav-list">
+                        <li>
+                            <Link to="/dashboard" className="sidebar-nav-item">
+                                <Home className="sidebar-nav-icon" />
+                                <span className="sidebar-nav-text">Home</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/dashboard/rooms" className="sidebar-nav-item"> {/* Updated path */}
+                                <MessageCircle className="sidebar-nav-icon" />
+                                <span className="sidebar-nav-text">Rooms</span>
+                                {unreadMessages > 0 && (
+                                    <span className="unread-messages-badge">
+                                        {unreadMessages}
+                                    </span>
+                                )}
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/dashboard/tasks" className="sidebar-nav-item"> {/* Updated path */}
+                                <ListTodo className="sidebar-nav-icon" />
+                                <span className="sidebar-nav-text">My Tasks</span>
+                            </Link>
+                        </li>
+                        <li>
+                            <Link to="/dashboard/teams" className="sidebar-nav-item"> {/* Updated path */}
+                                <Users className="sidebar-nav-icon" />
+                                <span className="sidebar-nav-text">Teams</span>
+                            </Link>
+                        </li>
+                    </ul>
+                </nav>
+            </aside>
 
+            {/* Main Content Wrapper */}
             <div className="main-content-wrapper">
-                {/* Header is always present */}
-                <Header user={user} signOut={signOut} />
+                {/* Header remains here */}
+                <header className="main-header">
+                    <div className="main-header-content">
+                        <h1 className="main-header-title">
+                            Overview of all projects
+                        </h1>
+                        {user && (
+                            <div className="user-actions-container">
+                                <div className="user-profile-info">
+                                    <div className="user-profile-icon-wrapper">
+                                        <UserCircle className="user-profile-icon" />
+                                    </div>
+                                    <div>
+                                        <p className="user-profile-username">{user.username || "User"}</p>
+                                        <p className="user-profile-email">{user.email}</p>
+                                    </div>
+                                </div>
+                                <button onClick={signOut} className="sign-out-button">
+                                    <LogOut className="sign-out-icon" />
+                                    Sign Out
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </header>
 
-                {/* The main content area where nested routes will render */}
+                {/* Main Content where child routes will render */}
                 <main className="main-content">
                     <div className="max-width-container">
-                        <Routes>
-                            {/* The index route renders when the path is exactly /dashboard */}
-                            <Route index element={
-                                <MainContent
-                                    user={user}
-                                    assignedTasks={assignedTasks}
-                                    taskCounts={taskCounts}
-                                    handleTaskClick={handleTaskClick}
-                                />
-                            } />
-                            {/* Route for Rooms, will replace DashboardContent */}
-                            <Route path="rooms" element={<Rooms />} />
-                            {/* Route for RoomDetail, nested under rooms */}
-                            <Route path="rooms/:roomId" element={<RoomDetail />} />
-                            {/* Route for Calendar */}
-                            <Route path="calendar" element={<CalendarComponent />} />
-                            {/* Add routes for Tasks and Teams as needed */}
-
-                            {/* You can add a catch-all for unknown nested paths, e.g., a 404 for dashboard */}
-                            {/* <Route path="*" element={<div>Dashboard Nested 404 Not Found</div>} /> */}
-                        </Routes>
-                        {/* If you pass context using Outlet, you'd use <Outlet context={{ ... }} /> here
-                            and remove the direct prop passing in the Route elements.
-                            Given the complexity of your data, passing context is cleaner:
-                            <Outlet context={{ user, assignedTasks, taskCounts, handleTaskClick }} />
-                            And then in DashboardContent, Rooms, etc., use:
-                            const { user, assignedTasks, taskCounts, handleTaskClick } = useOutletContext();
-                        */}
+                        {/* The Outlet is where the content of the child routes will appear */}
+                        {/* We pass props to the DashboardHomeContent component if it's rendered by the index route */}
+                        <Outlet context={{ user, assignedTasks, taskCounts, handleTaskClick }} />
                     </div>
                 </main>
-
-                {/* BottomNavBar is always present */}
-                <BottomNavBar />
+                <BottomNavBar></BottomNavBar>
             </div>
         </div>
     );

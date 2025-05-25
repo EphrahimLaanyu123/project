@@ -25,6 +25,7 @@ function App() {
           <Route path="calendar" element={<CalendarComponent />} />
           <Route path="rooms" element={<Rooms />} />
           <Route path="rooms/:roomId" element={<RoomDetail />} />
+          <Route path="" element={<Navigate to="/dashboard" replace />} />
         </Route>
       </Routes>
     </Router>
