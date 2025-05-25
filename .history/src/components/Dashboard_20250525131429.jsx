@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { Link, Outlet, useNavigate } from 'react-router-dom';
-import { supabase } from "../supabase";
-import { LogOut, UserCircle, LayoutDashboard, CheckCircle2, MessageCircle, Home, ListTodo, Users } from "lucide-react";
-import BottomNavBar from "./BottomNavBar";
-import './Dashboard.css';
+import { supabase } from "../supabase"; // Assuming supabase is correctly configured and imported
+import { LogOut, UserCircle, LayoutDashboard, CheckCircle2, MessageCircle, Home, ListTodo, Users } from "lucide-react"; // Import Lucide icons
+import BottomNavBar from "./BottomNavBar"; // Assuming BottomNavBar is correctly configured and imported
+import './Dashboard.css'; // Import the new CSS file
 
 const Dashboard = () => {
     const [user, setUser] = useState(null);
@@ -12,20 +12,17 @@ const Dashboard = () => {
     const navigate = useNavigate();
     const [assignedTasks, setAssignedTasks] = useState([]);
     const [unreadMessages, setUnreadMessages] = useState(0);
-    // New state for task counts
-    const [taskCounts, setTaskCounts] = useState({
-        completed: 0,
-        toDo: 0,
-        inProgress: 0,
-        blocked: 0, // Include blocked tasks in counts
-        total: 0,
-    });
 
     useEffect(() => {
+        /**
+         * Fetches user data, assigned tasks, and unread messages from Supabase.
+         * Handles loading states and error messages.
+         */
         async function fetchUser() {
             setIsLoading(true);
             setErrorMessage("");
 
+            // Fetch authenticated user data
             const { data: authData, error: authError } = await supabase.auth.getUser();
             if (authError || !authData?.user) {
                 setErrorMessage("Failed to get user information. Please log in again.");
@@ -34,8 +31,10 @@ const Dashboard = () => {
             }
 
             const userId = authData.user.id;
+            // Set initial user state with ID and email
             setUser({ id: userId, email: authData.user.email });
 
+            // Fetch additional user details (username) from the 'users' table
             const { data: userData, error: userError } = await supabase
                 .from("users")
                 .select("username")
@@ -43,55 +42,38 @@ const Dashboard = () => {
                 .single();
 
             if (!userError && userData) {
+                // Update user state with username if available
                 setUser(prevUser => ({ ...prevUser, username: userData.username }));
             } else if (userError) {
                 console.error("Error fetching user profile:", userError);
+                // Continue without username if there's an error, but log it
             }
 
+            // Fetch tasks assigned to the user
             const { data: taskData, error: taskError } = await supabase
                 .from("task_members")
-                .select("task_id, tasks(id, content, status, priority, room_id)")
+                .select("task_id, tasks(id, content, status, priority, room_id)") // Join with tasks table
                 .eq("user_id", userId)
-                .in("tasks.status", ['To Do', 'In Progress', 'Completed', 'Blocked']);
+                .in("tasks.status", ['To Do', 'In Progress', 'Completed', 'Blocked']); // Filter by relevant statuses
 
             if (taskError) {
                 console.error("Error fetching assigned tasks:", taskError);
                 setErrorMessage("Failed to fetch your assigned tasks.");
             } else if (taskData) {
+                // Map and format the fetched task data
                 const tasks = taskData.map(item => ({
                     ...item.tasks,
-                    toDo: item.tasks.status,
+                    toDo: item.tasks.status, // Rename status to toDo for consistency with existing logic
                 }));
                 setAssignedTasks(tasks);
-
-                // Calculate task counts
-                const counts = {
-                    completed: 0,
-                    toDo: 0,
-                    inProgress: 0,
-                    blocked: 0,
-                    total: tasks.length,
-                };
-
-                tasks.forEach(task => {
-                    if (task.status === "Completed") {
-                        counts.completed++;
-                    } else if (task.status === "To Do") {
-                        counts.toDo++;
-                    } else if (task.status === "In Progress") {
-                        counts.inProgress++;
-                    } else if (task.status === "Blocked") {
-                        counts.blocked++;
-                    }
-                });
-                setTaskCounts(counts);
             }
 
+            // Fetch unread messages count
             const { data: unreadData, error: unreadError } = await supabase
                 .from("chats")
                 .select("count(*)", { count: 'exact' })
-                .eq("is_read", false)
-                .neq("user_id", userId);
+                .eq("is_read", false)  // Only count unread messages
+                .neq("user_id", userId); // Exclude messages sent by the current user
 
             if (unreadError) {
                 console.error("Error fetching unread messages:", unreadError);
@@ -104,22 +86,30 @@ const Dashboard = () => {
         }
 
         fetchUser();
-    }, []);
+    }, []); // Empty dependency array means this effect runs once on mount
 
+    /**
+     * Handles user sign out and navigates to the home page.
+     */
     const signOut = async () => {
         try {
             await supabase.auth.signOut();
-            navigate("/");
+            navigate("/"); // Navigate to the root path after sign out
         } catch (error) {
             console.error("Error signing out:", error);
             setErrorMessage("Failed to sign out. Please try again.");
         }
     };
 
+    /**
+     * Navigates to the specific room when a task card is clicked.
+     * @param {string} roomId - The ID of the room associated with the task.
+     */
     const handleTaskClick = (roomId) => {
         navigate(`/rooms/${roomId}`);
     };
 
+    // Display a loading spinner while data is being fetched
     if (isLoading) {
         return (
             <div className="loading-spinner-container">
@@ -208,6 +198,12 @@ const Dashboard = () => {
                 {/* Main Content */}
                 <main className="main-content">
                     <div className="max-width-container">
+                        {errorMessage && (
+                            <div className="error-message-alert" role="alert">
+                                <p className="error-message-title">Error</p>
+                                <p>{errorMessage}</p>
+                            </div>
+                        )}
 
                         {/* Welcome message for the user */}
                         <div className="welcome-section">
@@ -215,31 +211,6 @@ const Dashboard = () => {
                                 Welcome, <span className="welcome-username">{user?.username || "User"}</span>!
                             </h2>
                             <p className="welcome-text">Here's a quick overview of your projects and tasks.</p>
-                        </div>
-
-                        {/* New Section: Task Status Summary Cards */}
-                        <h2 className="tasks-section-title">Task Summary</h2>
-                        <div className="task-summary-grid">
-                            <div className="summary-card total-tasks">
-                                <p className="summary-card-label">Total Tasks</p>
-                                <span className="summary-card-count">{taskCounts.total}</span>
-                            </div>
-                            <div className="summary-card completed-tasks">
-                                <p className="summary-card-label">Completed</p>
-                                <span className="summary-card-count">{taskCounts.completed}</span>
-                            </div>
-                            <div className="summary-card todo-tasks">
-                                <p className="summary-card-label">To Do</p>
-                                <span className="summary-card-count">{taskCounts.toDo}</span>
-                            </div>
-                            <div className="summary-card in-progress-tasks">
-                                <p className="summary-card-label">In Progress</p>
-                                <span className="summary-card-count">{taskCounts.inProgress}</span>
-                            </div>
-                             <div className="summary-card blocked-tasks">
-                                <p className="summary-card-label">Blocked</p>
-                                <span className="summary-card-count">{taskCounts.blocked}</span>
-                            </div>
                         </div>
 
                         <h2 className="tasks-section-title">Your Assigned Tasks</h2>
