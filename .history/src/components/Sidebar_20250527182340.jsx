@@ -4,7 +4,7 @@ import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { Home, MessageCircle, ListTodo, Users } from 'lucide-react'; // Removed LayoutDashboard as it's less relevant for a bottom nav
 import './Sidebar.css'; // This CSS file will now contain the bottom navbar styles
 
-const Sidebar = ({ unreadMessages }) => {
+const BottomNavbar = ({ unreadMessages }) => {
     const location = useLocation(); // Get the current location
 
     // Helper function to determine if a link is active
@@ -34,7 +34,7 @@ const Sidebar = ({ unreadMessages }) => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/dashboard/tasks" className={`bottom-navbar-nav-item ${isActive("/tasks") ? "active" : ""}`}>
+                    <Link to="/tasks" className={`bottom-navbar-nav-item ${isActive("/tasks") ? "active" : ""}`}>
                         <ListTodo className="bottom-navbar-nav-icon" />
                         <span className="bottom-navbar-nav-text">My Tasks</span>
                     </Link>
@@ -50,4 +50,4 @@ const Sidebar = ({ unreadMessages }) => {
     );
 };
 
-export default Sidebar;
+export default BottomNavbar;

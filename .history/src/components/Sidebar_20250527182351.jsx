@@ -34,7 +34,7 @@ const Sidebar = ({ unreadMessages }) => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/dashboard/tasks" className={`bottom-navbar-nav-item ${isActive("/tasks") ? "active" : ""}`}>
+                    <Link to="/tasks" className={`bottom-navbar-nav-item ${isActive("/tasks") ? "active" : ""}`}>
                         <ListTodo className="bottom-navbar-nav-icon" />
                         <span className="bottom-navbar-nav-text">My Tasks</span>
                     </Link>

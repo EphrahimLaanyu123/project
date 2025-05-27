@@ -1,0 +1,94 @@
+/* src/components/Dashboard.css */
+
+/* --- Bottom Navbar Styles --- */
+
+.bottom-navbar {
+    position: fixed; /* Makes the navbar float */
+    bottom: 0; /* Positions it at the bottom */
+    left: 0;
+    width: 100%; /* Spans the full width */
+    background-color: #2d3748; /* Equivalent to bg-gray-800 */
+    box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.2); /* Shadow on top */
+    z-index: 1000; /* Ensures it stays on top of other content */
+    padding: 0.5rem 0; /* Vertical padding */
+    display: flex;
+    justify-content: center; /* Center the navigation items */
+    align-items: center;
+}
+
+.bottom-navbar-nav-list {
+    display: flex;
+    justify-content: space-around; /* Distributes items evenly */
+    align-items: center;
+    width: 100%;
+    max-width: 500px; /* Limit max width for better appearance on large screens */
+    margin: 0;
+    padding: 0;
+    list-style: none; /* Remove default list styling */
+}
+
+.bottom-navbar-nav-item {
+    display: flex;
+    flex-direction: column; /* Stack icon and text vertically */
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #a0aec0; /* Equivalent to text-gray-400 */
+    padding: 0.5rem 0.75rem; /* Padding around each item */
+    border-radius: 0.5rem; /* Slightly rounded corners */
+    transition: color 0.3s ease, background-color 0.3s ease, transform 0.2s ease;
+    flex: 1; /* Allows items to grow and shrink */
+    text-align: center;
+    position: relative; /* For the unread messages badge */
+}
+
+.bottom-navbar-nav-item:hover {
+    color: #edf2f7; /* Equivalent to text-gray-100 */
+    background-color: #4a5568; /* Equivalent to bg-gray-700 */
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+.bottom-navbar-nav-item.active {
+    color: #38b2ac; /* Equivalent to text-teal-400 for active state */
+    /* You can add a subtle background for active state if desired */
+    /* background-color: rgba(56, 178, 172, 0.1); */
+    font-weight: 600; /* Make text bolder when active */
+}
+
+.bottom-navbar-nav-icon {
+    height: 1.5rem; /* h-6 */
+    width: 1.5rem; /* w-6 */
+    margin-bottom: 0.25rem; /* Small space between icon and text */
+}
+
+.bottom-navbar-nav-text {
+    font-size: 0.75rem; /* text-xs */
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+/* Unread Messages Badge */
+.unread-messages-badge {
+    position: absolute;
+    top: 0.1rem; /* Adjust position as needed */
+    right: 0.1rem; /* Adjust position as needed */
+    background-color: #e53e3e; /* red-500 */
+    color: white;
+    font-size: 0.65rem; /* Smaller text for badge */
+    font-weight: bold;
+    padding: 0.1rem 0.4rem;
+    border-radius: 9999px; /* Fully rounded */
+    min-width: 1.2rem; /* Ensure it's a circle even with 1 digit */
+    text-align: center;
+    line-height: 1;
+    transform: translate(50%, -50%); /* Adjust to float outside */
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+/* Media query for larger screens to potentially hide or change behavior */
+@media (min-width: 768px) {
+    /* You might want to hide the bottom navbar on larger screens
+       if you introduce a traditional sidebar for desktop. */
+    /* .bottom-navbar {
+        display: none;
+    } */
+}

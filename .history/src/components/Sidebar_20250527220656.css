@@ -1,0 +1,186 @@
+
+/* Bottom Navbar Styles */
+.bottom-navbar {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 85%;
+    max-width: 450px;
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 12px 0;
+    z-index: 1000;
+    animation: slideUp 0.5s ease-out forwards;
+    font-family: "Wix Madefor Display", sans-serif;
+  }
+  
+  @keyframes slideUp {
+    from {
+      transform: translate(-50%, 100%);
+      opacity: 0;
+    }
+    to {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+  }
+  
+  .bottom-navbar-nav-list {
+    display: flex;
+    justify-content: space-around;
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    position: relative;
+  }
+  
+  /* The sliding active indicator pill */
+  .bottom-navbar-nav-list::before {
+    content: '';
+    position: absolute;
+    height: 42px;
+    width: 65px;
+    background: #f0f4ff;
+    border-radius: 16px;
+    z-index: -1;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    top: 4px;
+    opacity: 0;
+  }
+  
+  .bottom-navbar-nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    text-decoration: none;
+    color: #718096;
+    position: relative;
+    transition: all 0.3s ease;
+    border-radius: 12px;
+  }
+  
+  .bottom-navbar-nav-icon {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
+    transition: transform 0.2s ease, color 0.3s ease;
+  }
+  
+  .bottom-navbar-nav-text {
+    font-size: 12px;
+    font-weight: 500;
+    transition: color 0.3s ease;
+  }
+  
+  /* Active state */
+  .bottom-navbar-nav-item.active {
+    color: #4338ca;
+  }
+  
+  .bottom-navbar-nav-item.active .bottom-navbar-nav-icon {
+    transform: translateY(-2px);
+    color: #4338ca;
+  }
+  
+  .bottom-navbar-nav-item.active .bottom-navbar-nav-text {
+    font-weight: 600;
+    color: #4338ca;
+  }
+  
+  /* Hover state */
+  .bottom-navbar-nav-item:hover:not(.active) {
+    color: #4f46e5;
+  }
+  
+  .bottom-navbar-nav-item:hover .bottom-navbar-nav-icon {
+    transform: translateY(-1px);
+  }
+  
+  /* Touch effect */
+  .bottom-navbar-nav-item:active {
+    transform: scale(0.95);
+  }
+  
+  /* Unread messages badge */
+  .unread-messages-badge {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    min-width: 18px;
+    height: 18px;
+    background-color: #ef4444;
+    color: white;
+    border-radius: 9px;
+    font-size: 10px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 5px;
+    animation: pulse 1.5s infinite;
+  }
+  
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(239, 68, 68, 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+  }
+  
+  /* Dark mode support */
+  @media (prefers-color-scheme: dark) {
+    .bottom-navbar {
+      background: rgba(30, 30, 46, 0.85);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+    }
+    
+    .bottom-navbar-nav-list::before {
+      background: rgba(56, 56, 82, 0.6);
+    }
+    
+    .bottom-navbar-nav-item {
+      color: #a0aec0;
+    }
+    
+    .bottom-navbar-nav-item.active {
+      color: #818cf8;
+    }
+    
+    .bottom-navbar-nav-item.active .bottom-navbar-nav-icon {
+      color: #818cf8;
+    }
+    
+    .bottom-navbar-nav-item:hover:not(.active) {
+      color: #a5b4fc;
+    }
+  }
+  
+  /* Media queries for responsiveness */
+  @media (max-width: 640px) {
+    .bottom-navbar {
+      width: 92%;
+      padding: 10px 0;
+    }
+    
+    .bottom-navbar-nav-text {
+      font-size: 11px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .bottom-navbar {
+      width: 75%;
+      max-width: 500px;
+    }
+  }

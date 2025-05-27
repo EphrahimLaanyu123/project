@@ -97,12 +97,10 @@
 /* src/components/Header.css */
 .main-header {
     background-color: #ffffff;
-    padding: 1.5rem;
+    padding: 20px 30px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
     z-index: 10; /* Ensure header is above other content if needed */
     border-bottom: 1px solid #e0e0e0;
-    font-family: "Wix Madefor Display", sans-serif;
-    padding-left: 5rem;
 }
 
 .main-header-content {

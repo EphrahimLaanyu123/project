@@ -99,8 +99,6 @@ const Dashboard = () => {
             }
 
 
-            setIsLoading(false);
-        }
 
         fetchUser();
     }, []);

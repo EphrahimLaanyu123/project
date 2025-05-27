@@ -98,6 +98,18 @@ const Dashboard = () => {
                 setTaskCounts(counts);
             }
 
+            const { data: unreadData, error: unreadError } = await supabase
+                .from("chats")
+                .select("count(*)", { count: 'exact' })
+                .eq("is_read", false)
+                .neq("user_id", userId);
+
+            if (unreadError) {
+                console.error("Error fetching unread messages:", unreadError);
+                setErrorMessage("Failed to fetch unread messages count.");
+            } else if (unreadData && unreadData[0]?.count) {
+                setUnreadMessages(parseInt(unreadData[0].count, 10));
+            }
 
             setIsLoading(false);
         }

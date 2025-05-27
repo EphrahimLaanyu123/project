@@ -102,7 +102,7 @@
     z-index: 10; /* Ensure header is above other content if needed */
     border-bottom: 1px solid #e0e0e0;
     font-family: "Wix Madefor Display", sans-serif;
-    padding-left: 5rem;
+
 }
 
 .main-header-content {
