@@ -40,7 +40,7 @@ const Sidebar = ({ unreadMessages }) => {
                     </Link>
                 </li>
                 <li>
-                    <Link to="/dashboard/teams" className={`bottom-navbar-nav-item ${isActive("/teams") ? "active" : ""}`}>
+                    <Link to="//teams" className={`bottom-navbar-nav-item ${isActive("/teams") ? "active" : ""}`}>
                         <Users className="bottom-navbar-nav-icon" />
                         <span className="bottom-navbar-nav-text">Teams</span>
                     </Link>
