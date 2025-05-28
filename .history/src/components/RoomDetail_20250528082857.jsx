@@ -380,3 +380,38 @@ export default RoomDetail;
 
 
 
+
+import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { supabase } from "../supabase";
+
+function RoomDetail() {
+  const { roomId } = useParams();
+  const [room, setRoom] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [members, setMembers] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: roomData } = await supabase.from("rooms").select("*").eq("id", roomId).single();
+      const { data: tasksData } = await supabase.from("tasks").select("*").eq("room_id", roomId);
+      const { data: membersData } = await supabase.from("room_members").select("user_id").eq("room_id", roomId);
+      setRoom(roomData); setTasks(tasksData); setMembers(membersData);
+    };
+    fetchData();
+  }, [roomId]);
+
+  return (
+    <div>
+      {room && <h1>{room.name}</h1>}
+      <div>
+        <h2>Tasks ({tasks.length})</h2>
+        {tasks.map(task => <div key={task.id}>{task.content}</div>)}
+      </div>
+      <div>
+        <h2>Members ({members.length})</h2>
+        {members.map(member => <div key={member.user_id}>{member.username}</div>)}
+      </div>
+    </div>
+  );
+}
