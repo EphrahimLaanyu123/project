@@ -1,5 +1,6 @@
+// src/components/Dashboard.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, Routes, Route, Outlet } from 'react-router-dom';
+import { useNavigate, Routes, Route, Outlet } from 'react-router-dom'; // Import Routes, Route, and Outlet
 import { supabase } from "../supabase";
 import BottomNavBar from "./BottomNavBar";
 import Sidebar from "./Sidebar";

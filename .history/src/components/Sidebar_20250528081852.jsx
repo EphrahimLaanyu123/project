@@ -37,6 +37,7 @@ const Sidebar = ({ unreadMessages }) => {
                         <span className="bottom-navbar-nav-text">My Tasks</span>
                     </Link>
                 </li>
+
             </ul>
         </nav>
     );

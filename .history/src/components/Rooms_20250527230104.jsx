@@ -214,7 +214,7 @@ function Rooms() {
                     {myRooms.map((room) => (
                       <button
                         key={room.id}
-                        onClick={() => navigate(`/dashboard/rooms/${room.id}`)}
+                        onClick={() => navigate(`/rooms/${room.id}`)}
                         className="p-6 rounded-xl bg-gradient-to-br from-amber-50 to-amber-100 hover:from-amber-100 hover:to-amber-200 border-l-4 border-amber-400 shadow-sm hover:shadow-md text-left"
                       >
                         <div className="flex items-start justify-between">

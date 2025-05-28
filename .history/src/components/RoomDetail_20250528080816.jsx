@@ -134,17 +134,19 @@ function RoomDetail() {
         { event: "*", schema: "public", table: "tasks" },
         (payload) => {
           console.log("Task change:", payload);
-          fetchTasks();
+          fetchTasks(); // Re-fetch tasks to update the list
         }
       )
       .subscribe();
 
+    // Cleanup function for subscriptions
     return () => {
       supabase.removeChannel(memberSubscription);
       supabase.removeChannel(taskSubscription);
     };
   }, [roomId]); // Re-run effect if roomId changes
 
+  // Effect to determine if the current user is the room creator
   useEffect(() => {
     if (user && room) {
       setIsCreator(user.id === room.created_by);
@@ -310,6 +312,7 @@ function RoomDetail() {
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-gray-900">Tasks</h3>
+                {/* Button to open Add New Task modal */}
                 <button
                   onClick={() => setShowTaskModal(true)}
                   className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm"
@@ -318,16 +321,17 @@ function RoomDetail() {
                 </button>
               </div>
               <div className="p-6">
-                {tasks.length > 0 ? (
+                {tasks.length > 0 ? ( // Display tasks if available
                   <div className="grid gap-4">
                     {tasks.map((task) => (
                       <div
                         key={task.id}
-                        onClick={() => setSelectedTask(task)}
+                        onClick={() => setSelectedTask(task)} // Open TaskDetail modal on click
                         className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg shadow-sm border-l-4 border-emerald-400 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.02]"
                       >
-                        <div className="flex justify-between items-center mb-2"> {/* Added mb-2 for spacing */}
-                          <span className="text-gray-900 font-medium">{task.content}</span>
+                        <div className="flex justify-between items-center">
+                          <span className="text-gray-900">{task.content}</span>
+                          {/* Task priority badge */}
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-medium ${
                               task.priority === 'high' ? 'bg-red-100 text-red-700' :
@@ -339,14 +343,6 @@ function RoomDetail() {
                             {task.priority}
                           </span>
                         </div>
-                        {task.deadline && (
-                          <div className="flex items-center text-sm text-gray-600">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            Deadline: {new Date(task.deadline).toLocaleDateString()}
-                          </div>
-                        )}
                       </div>
                     ))}
                   </div>

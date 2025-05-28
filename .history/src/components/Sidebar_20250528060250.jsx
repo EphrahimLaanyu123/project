@@ -1,5 +1,6 @@
+// src/components/BottomNavbar.jsx
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom'; // Import useLocation
 import { Home, MessageCircle, ListTodo, Users } from 'lucide-react'; 
 import './Sidebar.css';
 
@@ -37,11 +38,15 @@ const Sidebar = ({ unreadMessages }) => {
                         <span className="bottom-navbar-nav-text">My Tasks</span>
                     </Link>
                 </li>
+                <li>
+                    <Link to="/dashboard/teams" className={`bottom-navbar-nav-item ${isActive("/teams") ? "active" : ""}`}>
+                        <Users className="bottom-navbar-nav-icon" />
+                        <span className="bottom-navbar-nav-text">Teams</span>
+                    </Link>
+                </li>
             </ul>
         </nav>
     );
 };
 
 export default Sidebar;
-
-

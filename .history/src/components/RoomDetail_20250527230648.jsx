@@ -17,7 +17,7 @@ function RoomDetail() {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [selectedTask, setSelectedTask] = useState(null);
   const [showChatModal, setShowChatModal] = useState(false);
-  // New state to control the visibility of the members dropdown
+  // State to control the visibility of the members dropdown
   const [showMembersDropdown, setShowMembersDropdown] = useState(false);
 
   useEffect(() => {
@@ -34,7 +34,6 @@ function RoomDetail() {
 
     // Function to fetch room members and their details
     async function fetchRoomMembers() {
-      // Fetch user_ids from room_members table for the current room
       const { data: roomMembersData, error: roomMembersError } = await supabase
         .from("room_members")
         .select("user_id")
@@ -81,7 +80,6 @@ function RoomDetail() {
         };
       });
 
-      // Sort members to put the creator at the top
       setMembers(combinedData.sort((a, b) => b.isCreator - a.isCreator));
     }
 
@@ -95,11 +93,12 @@ function RoomDetail() {
       setUser(authData.user);
     }
 
-    // Function to fetch tasks for the current room
+    // Function to fetch tasks for the current room, including assigned user's username
     async function fetchTasks() {
       const { data: tasksData, error: tasksError } = await supabase
         .from("tasks")
-        .select("*")
+        // Select all task fields and the username from the 'users' table via 'assigned_to' foreign key
+        .select("*, assigned_to:users(username)")
         .eq("room_id", roomId);
 
       if (tasksError) {
@@ -110,11 +109,13 @@ function RoomDetail() {
       setTasks(tasksData);
     }
 
+    // Initial data fetching calls
     fetchRoomDetails();
     fetchRoomMembers();
     fetchUser();
     fetchTasks();
 
+    // Real-time subscription for new room members
     const memberSubscription = supabase
       .channel("realtime:room_members")
       .on(
@@ -122,11 +123,12 @@ function RoomDetail() {
         { event: "INSERT", schema: "public", table: "room_members" },
         (payload) => {
           console.log("New member added:", payload.new);
-          fetchRoomMembers();
+          fetchRoomMembers(); // Re-fetch members to update the list
         }
       )
       .subscribe();
 
+    // Real-time subscription for task changes (insert, update, delete)
     const taskSubscription = supabase
       .channel("realtime:tasks")
       .on(
@@ -134,17 +136,19 @@ function RoomDetail() {
         { event: "*", schema: "public", table: "tasks" },
         (payload) => {
           console.log("Task change:", payload);
-          fetchTasks();
+          fetchTasks(); // Re-fetch tasks to update the list
         }
       )
       .subscribe();
 
+    // Cleanup function for subscriptions
     return () => {
       supabase.removeChannel(memberSubscription);
       supabase.removeChannel(taskSubscription);
     };
   }, [roomId]); // Re-run effect if roomId changes
 
+  // Effect to determine if the current user is the room creator
   useEffect(() => {
     if (user && room) {
       setIsCreator(user.id === room.created_by);
@@ -204,11 +208,22 @@ function RoomDetail() {
     } else {
       console.log("Member added successfully.");
       setNewMember(""); // Clear the input field
+      setErrorMessage(""); // Clear any previous error messages
     }
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+      {errorMessage && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+          <strong className="font-bold">Error:</strong>
+          <span className="block sm:inline"> {errorMessage}</span>
+          <span className="absolute top-0 bottom-0 right-0 px-4 py-3" onClick={() => setErrorMessage("")}>
+            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+          </span>
+        </div>
+      )}
+
       {room ? ( // Render content only if room data is available
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Room Header Section */}
@@ -310,6 +325,7 @@ function RoomDetail() {
             <div className="bg-white rounded-xl shadow-md overflow-hidden">
               <div className="border-b border-gray-100 bg-gradient-to-r from-emerald-50 to-emerald-100 p-4 flex justify-between items-center">
                 <h3 className="text-xl font-semibold text-gray-900">Tasks</h3>
+                {/* Button to open Add New Task modal */}
                 <button
                   onClick={() => setShowTaskModal(true)}
                   className="bg-emerald-500 text-white px-4 py-2 rounded-lg hover:bg-emerald-600 transition-all duration-200 shadow-sm hover:shadow-md transform hover:-translate-y-0.5 text-sm"
@@ -318,16 +334,19 @@ function RoomDetail() {
                 </button>
               </div>
               <div className="p-6">
-                {tasks.length > 0 ? (
+                {tasks.length > 0 ? ( // Display tasks if available
                   <div className="grid gap-4">
                     {tasks.map((task) => (
                       <div
                         key={task.id}
-                        onClick={() => setSelectedTask(task)}
-                        className="bg-gradient-to-r from-gray-50 to-gray-100 p-4 rounded-lg shadow-sm border-l-4 border-emerald-400 hover:shadow-md transition-all duration-200 cursor-pointer transform hover:scale-[1.02]"
+                        onClick={() => setSelectedTask(task)} // Open TaskDetail modal on click
+                        // Increased padding, stronger shadow, and hover effects for a professional look
+                        className="bg-gradient-to-r from-gray-50 to-gray-100 p-6 rounded-lg shadow-md border-l-4 border-emerald-400 hover:shadow-lg transition-all duration-200 cursor-pointer transform hover:scale-[1.02]"
                       >
-                        <div className="flex justify-between items-center mb-2"> {/* Added mb-2 for spacing */}
-                          <span className="text-gray-900 font-medium">{task.content}</span>
+                        <div className="flex justify-between items-start mb-2">
+                          {/* Task content with larger font and bold */}
+                          <span className="text-lg font-semibold text-gray-900">{task.content}</span>
+                          {/* Task priority badge */}
                           <span
                             className={`px-3 py-1 rounded-full text-xs font-medium ${
                               task.priority === 'high' ? 'bg-red-100 text-red-700' :
@@ -339,14 +358,30 @@ function RoomDetail() {
                             {task.priority}
                           </span>
                         </div>
-                        {task.deadline && (
-                          <div className="flex items-center text-sm text-gray-600">
-                            <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                            </svg>
-                            Deadline: {new Date(task.deadline).toLocaleDateString()}
-                          </div>
+                        {/* Task description, if available */}
+                        {task.description && (
+                          <p className="text-gray-700 text-sm mb-2">{task.description}</p>
                         )}
+                        <div className="flex items-center text-gray-600 text-sm space-x-4">
+                          {/* Due date, if available, with an icon */}
+                          {task.due_date && (
+                            <span className="flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                              </svg>
+                              Due: {new Date(task.due_date).toLocaleDateString()}
+                            </span>
+                          )}
+                          {/* Assigned to user, if available, with an icon */}
+                          {task.assigned_to && task.assigned_to.username && (
+                            <span className="flex items-center gap-1">
+                              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                              </svg>
+                              Assigned: {task.assigned_to.username}
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>

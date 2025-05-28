@@ -37,6 +37,12 @@ const Sidebar = ({ unreadMessages }) => {
                         <span className="bottom-navbar-nav-text">My Tasks</span>
                     </Link>
                 </li>
+                <li>
+                    <Link to="/dashboard/teams" className={`bottom-navbar-nav-item ${isActive("/teams") ? "active" : ""}`}>
+                        <Users className="bottom-navbar-nav-icon" />
+                        <span className="bottom-navbar-nav-text">Teams</span>
+                    </Link>
+                </li>
             </ul>
         </nav>
     );
@@ -45,3 +51,7 @@ const Sidebar = ({ unreadMessages }) => {
 export default Sidebar;
 
 
+const channel = supabase
+  .channel('room_chat')
+  .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' }, handleNewMessage)
+  .subscribe();

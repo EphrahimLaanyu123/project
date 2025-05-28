@@ -1,12 +1,15 @@
+// src/components/Dashboard.jsx
 import React, { useEffect, useState } from "react";
-import { useNavigate, Routes, Route, Outlet } from 'react-router-dom';
+import { useNavigate, Routes, Route, Outlet } from 'react-router-dom'; // Import Routes, Route, and Outlet
 import { supabase } from "../supabase";
 import BottomNavBar from "./BottomNavBar";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import Rooms from "./Rooms"; 
-import RoomDetail from "./RoomDetail";
-import CalendarComponent from "./Calendar"; 
+// Import the components that will be rendered inside the Dashboard's Outlet
+import Rooms from "./Rooms"; // Your Rooms component
+import RoomDetail from "./RoomDetail"; // Your RoomDetail component
+import CalendarComponent from "./Calendar"; // Your Calendar component
+// Import other components you might want to render inside the dashboard, e.g., Tasks, Teams
 import MainContent from "./MainContent";
 import MyTasks from "./MyTasks";
 
@@ -112,6 +115,7 @@ const Dashboard = () => {
         }
     };
 
+    // This handleTaskClick assumes it's navigating to a room detail page
     const handleTaskClick = (roomId) => {
         navigate(`rooms/${roomId}`);
     };
